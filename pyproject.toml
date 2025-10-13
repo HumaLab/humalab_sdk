@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "humalab"
-version = "0.0.2"
+dynamic = ["version", "dependencies", "optional-dependencies"]
 description = "Python SDK for HumaLab - A platform for adaptive AI validation."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -25,21 +25,10 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-dependencies = [
-    "numpy>=1.20.0",
-    "omegaconf>=2.1.0",
-    "requests>=2.25.0",
-    "pyyaml>=5.4.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=6.0.0",
-    "pytest-cov>=2.10.0",
-    "black>=21.0",
-    "flake8>=3.9.0",
-    "mypy>=0.910",
-]
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies.dev = {file = ["requirements-dev.txt"]}
 
 [project.urls]
 Homepage = "https://github.com/humalab/humalab_sdk"
