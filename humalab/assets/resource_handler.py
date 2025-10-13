@@ -8,7 +8,7 @@ from humalab_service.humalab_host import HumaLabHost
 from humalab_service.services.stores.obj_store import ObjStore
 from humalab_service.services.stores.namespace import ObjectType
 from humalab_service.db.resource import ResourceDocument
-from humalab_sdk.assets.archive import extract_archive
+from humalab.assets.archive import extract_archive
 
 
 ASSET_TYPE_TO_EXTENSIONS = {

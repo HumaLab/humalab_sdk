@@ -1,10 +1,10 @@
 import uuid
-from humalab_sdk.metrics.dist_metric import DistributionMetric
-from humalab_sdk.metrics.metric import MetricGranularity, MetricType, Metrics
-from humalab_sdk.constants import EpisodeStatus
+from humalab.metrics.dist_metric import DistributionMetric
+from humalab.metrics.metric import MetricGranularity, MetricType, Metrics
+from humalab.constants import EpisodeStatus
 
-from humalab_sdk.metrics.summary import Summary
-from humalab_sdk.scenario import Scenario
+from humalab.metrics.summary import Summary
+from humalab.scenario import Scenario
 
 class Run:
     def __init__(self,

@@ -2,12 +2,12 @@ import unittest
 from unittest.mock import patch, MagicMock, Mock
 import uuid
 
-from humalab_sdk import humalab
-from humalab_sdk.run import Run
-from humalab_sdk.scenario import Scenario
-from humalab_sdk.humalab_config import HumalabConfig
-from humalab_sdk.humalab_api_client import HumaLabApiClient
-from humalab_sdk.constants import EpisodeStatus
+from humalab import humalab
+from humalab.run import Run
+from humalab.scenario import Scenario
+from humalab.humalab_config import HumalabConfig
+from humalab.humalab_api_client import HumaLabApiClient
+from humalab.constants import EpisodeStatus
 
 
 class HumalabTest(unittest.TestCase):
@@ -71,10 +71,10 @@ class HumalabTest(unittest.TestCase):
 
     # Tests for init context manager
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_create_run_with_provided_parameters(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() creates a Run with provided parameters."""
         # Pre-condition
@@ -127,10 +127,10 @@ class HumalabTest(unittest.TestCase):
         # Verify finish was called
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_use_config_defaults_when_parameters_not_provided(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() uses config defaults when parameters are not provided."""
         # Pre-condition
@@ -163,10 +163,10 @@ class HumalabTest(unittest.TestCase):
 
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_generate_uuid_when_id_not_provided(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() generates a UUID when id is not provided."""
         # Pre-condition
@@ -196,10 +196,10 @@ class HumalabTest(unittest.TestCase):
 
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_initialize_scenario_with_seed(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() initializes scenario with provided seed."""
         # Pre-condition
@@ -232,10 +232,10 @@ class HumalabTest(unittest.TestCase):
 
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_pull_scenario_from_api_when_scenario_id_provided(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() pulls scenario from API when scenario_id is provided."""
         # Pre-condition
@@ -269,10 +269,10 @@ class HumalabTest(unittest.TestCase):
 
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_set_global_cur_run(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() sets the global _cur_run variable."""
         # Pre-condition
@@ -300,10 +300,10 @@ class HumalabTest(unittest.TestCase):
 
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_call_finish_on_exception(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() calls finish even when exception occurs in context."""
         # Pre-condition
@@ -331,10 +331,10 @@ class HumalabTest(unittest.TestCase):
         # Verify finish was still called
         mock_run_inst.finish.assert_called_once()
 
-    @patch('humalab_sdk.humalab.HumaLabApiClient')
-    @patch('humalab_sdk.humalab.HumalabConfig')
-    @patch('humalab_sdk.humalab.Scenario')
-    @patch('humalab_sdk.humalab.Run')
+    @patch('humalab.humalab.HumaLabApiClient')
+    @patch('humalab.humalab.HumalabConfig')
+    @patch('humalab.humalab.Scenario')
+    @patch('humalab.humalab.Run')
     def test_init_should_create_api_client_with_custom_parameters(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() creates API client with custom base_url, api_key, and timeout."""
         # Pre-condition
@@ -423,7 +423,7 @@ class HumalabTest(unittest.TestCase):
 
     # Tests for login function
 
-    @patch('humalab_sdk.humalab.HumalabConfig')
+    @patch('humalab.humalab.HumalabConfig')
     def test_login_should_set_api_key_when_provided(self, mock_config_class):
         """Test that login() sets the api_key when provided."""
         # Pre-condition
@@ -442,7 +442,7 @@ class HumalabTest(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(mock_config.api_key, new_key)
 
-    @patch('humalab_sdk.humalab.HumalabConfig')
+    @patch('humalab.humalab.HumalabConfig')
     def test_login_should_keep_existing_key_when_not_provided(self, mock_config_class):
         """Test that login() keeps existing api_key when key is not provided."""
         # Pre-condition
@@ -464,7 +464,7 @@ class HumalabTest(unittest.TestCase):
         self.assertEqual(mock_config.base_url, existing_url)
         self.assertEqual(mock_config.timeout, existing_timeout)
 
-    @patch('humalab_sdk.humalab.HumalabConfig')
+    @patch('humalab.humalab.HumalabConfig')
     def test_login_should_return_true(self, mock_config_class):
         """Test that login() always returns True."""
         # Pre-condition
@@ -480,7 +480,7 @@ class HumalabTest(unittest.TestCase):
         # Post-condition
         self.assertTrue(result)
 
-    @patch('humalab_sdk.humalab.HumalabConfig')
+    @patch('humalab.humalab.HumalabConfig')
     def test_login_should_accept_optional_parameters(self, mock_config_class):
         """Test that login() accepts optional parameters without errors."""
         # Pre-condition

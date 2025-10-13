@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any  
-from humalab_sdk.constants import EpisodeStatus
+from humalab.constants import EpisodeStatus
 
 
 class MetricType(Enum):

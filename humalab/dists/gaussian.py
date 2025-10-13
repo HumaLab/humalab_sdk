@@ -1,4 +1,4 @@
-from humalab_sdk.dists.distribution import Distribution
+from humalab.dists.distribution import Distribution
 from typing import Any
 import numpy as np
 

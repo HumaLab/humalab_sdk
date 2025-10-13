@@ -1,6 +1,6 @@
 
-from humalab_sdk.metrics.metric import MetricGranularity, Metrics, MetricType
-from humalab_sdk.constants import EpisodeStatus
+from humalab.metrics.metric import MetricGranularity, Metrics, MetricType
+from humalab.constants import EpisodeStatus
 
 
 class Summary(Metrics):
