@@ -8,15 +8,12 @@ the package to be installed via pip.
 from setuptools import setup, find_packages
 import os
 
-# Read version from __init__.py
+# Read version from VERSION file
 version = "0.0.1"
-init_file = os.path.join(os.path.dirname(__file__), "__init__.py")
-if os.path.exists(init_file):
-    with open(init_file, "r") as f:
-        for line in f:
-            if line.startswith("__version__"):
-                version = line.split("=")[1].strip().strip('"').strip("'")
-                break
+version_file = os.path.join(os.path.dirname(__file__), "VERSION")
+if os.path.exists(version_file):
+    with open(version_file, "r") as f:
+        version = f.read().strip()
 
 # Read long description from README
 long_description = ""
@@ -50,18 +47,15 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        "numpy>=1.20.0",
-        "omegaconf>=2.1.0",
-        "requests>=2.25.0",
-        "pyyaml>=5.4.0",
+        line.strip()
+        for line in open("requirements.txt")
+        if line.strip() and not line.startswith("#")
     ],
     extras_require={
         "dev": [
-            "pytest>=6.0.0",
-            "pytest-cov>=2.10.0",
-            "black>=21.0",
-            "flake8>=3.9.0",
-            "mypy>=0.910",
+            line.strip()
+            for line in open("requirements-dev.txt")
+            if line.strip() and not line.startswith("#") and not line.startswith("-r")
         ],
     },
     entry_points={
