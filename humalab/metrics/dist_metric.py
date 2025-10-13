@@ -1,5 +1,5 @@
 
-from humalab_sdk.metrics.metric import MetricGranularity, Metrics, MetricType
+from humalab.metrics.metric import MetricGranularity, Metrics, MetricType
 
 class DistributionMetric(Metrics):
     def __init__(self, 

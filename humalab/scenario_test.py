@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from humalab_sdk.scenario import Scenario
+from humalab.scenario import Scenario
 
 
 class ScenarioTest(unittest.TestCase):

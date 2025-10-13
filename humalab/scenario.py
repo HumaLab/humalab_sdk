@@ -2,17 +2,17 @@ from typing import Any
 import numpy as np
 from omegaconf import OmegaConf, ListConfig, AnyNode, DictConfig
 import yaml
-from humalab_sdk.dists.bernoulli import Bernoulli
-from humalab_sdk.dists.categorical import Categorical
-from humalab_sdk.dists.uniform import Uniform
-from humalab_sdk.dists.discrete import Discrete
-from humalab_sdk.dists.log_uniform import LogUniform
-from humalab_sdk.dists.gaussian import Gaussian
-from humalab_sdk.dists.truncated_gaussian import TruncatedGaussian
+from humalab.dists.bernoulli import Bernoulli
+from humalab.dists.categorical import Categorical
+from humalab.dists.uniform import Uniform
+from humalab.dists.discrete import Discrete
+from humalab.dists.log_uniform import LogUniform
+from humalab.dists.gaussian import Gaussian
+from humalab.dists.truncated_gaussian import TruncatedGaussian
 from functools import partial
-from humalab_sdk.constants import EpisodeStatus
-from humalab_sdk.metrics.dist_metric import DistributionMetric
-from humalab_sdk.metrics.metric import MetricGranularity
+from humalab.constants import EpisodeStatus
+from humalab.metrics.dist_metric import DistributionMetric
+from humalab.metrics.metric import MetricGranularity
 import copy
 import uuid
 

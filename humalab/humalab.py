@@ -1,15 +1,15 @@
 from contextlib import contextmanager
-from humalab_sdk.run import Run
-from humalab_sdk.humalab_config import HumalabConfig
-from humalab_sdk.humalab_api_client import HumaLabApiClient
-from humalab_sdk.constants import EpisodeStatus
+from humalab.run import Run
+from humalab.humalab_config import HumalabConfig
+from humalab.humalab_api_client import HumaLabApiClient
+from humalab.constants import EpisodeStatus
 
 import uuid
 import os
 
 from collections.abc import Generator
 
-from humalab_sdk.scenario import Scenario
+from humalab.scenario import Scenario
 
 _cur_run: Run | None = None
 
