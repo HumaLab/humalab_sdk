@@ -1,4 +1,8 @@
 from contextlib import contextmanager
+
+from humalab.assets.files.resource_file import ResourceFile
+from humalab.assets.files.urdf_file import URDFFile
+from humalab.assets.resource import ResourceManager
 from humalab.run import Run
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
@@ -131,6 +135,69 @@ if __name__ == "__main__":
         print("Friction: ", scenario.scenario.cup.friction)
         print("Num Objects: ", scenario.scenario.num_objects)
 
+        scenario_string = """
+        scenario:
+          cup:
+            position: "${uniform: [0.7, 0.7, 0.7], 
+                                [1.5, 1.3, 0.7], [2, 3]}"
+            orientation: "${uniform: 0.3, 0.7}"
+            asset: "${categorical: ['lerobot', 'apple2', 'apple3'], [0.1, 0.3, 0.5]}"
+            friction: "${gaussian: 0.3, 0.05}"
+          hello: 13
+          jkjk: test
+          num_objects: "${discrete: 5, 10}"
+          dfdjkjk: "hello"
+        """
+        with init(entity="default",
+            project="test",
+            name="my first run",
+            description="testing the humalab sdk",
+            tags=["tag1", "tag2"],
+            scenario=scenario_string,
+            num_env=None) as run:
+            print(f"Run ID: {run.id}")
+            print(f"Run Name: {run.name}")
+            print(f"Run Description: {run.description}")
+            print(f"Run Tags: {run.tags}")
+            print(f"Run Scenario YAML:\n{run.scenario.yaml}")
+
+            scenario = run.scenario
+            # Simulate some operations
+            print("CUP position: ", scenario.scenario.cup.position)
+            print("CUP orientation: ", scenario.scenario.cup.orientation)
+            print("Asset: ", scenario.scenario.cup.asset)
+            print("Friction: ", scenario.scenario.cup.friction)
+            print("Num Objects: ", scenario.scenario.num_objects)
+            scenario.reset()
+            print("======================SCENARIO RESET==========================")
+            print("CUP position: ", scenario.scenario.cup.position)
+            print("CUP orientation: ", scenario.scenario.cup.orientation)
+            print("Asset: ", scenario.scenario.cup.asset)
+            print("Friction: ", scenario.scenario.cup.friction)
+            print("Num Objects: ", scenario.scenario.num_objects)
+
+        resource = ResourceManager()
+        urdf_file: URDFFile = resource.download(name="lerobot", version=1)
+        print("URDF File: ", urdf_file.filename)
+        print("URDF Description: ", urdf_file.description)
+        print("URDF Created At: ", urdf_file.created_at)
+        print("URDF Root Path: ", urdf_file._root_path)
+        print("URDF Root Path: ", urdf_file._urdf_filename)
+
+        urdf_file: URDFFile = resource.download(name="lerobot")
+        print("URDF File: ", urdf_file.filename)
+        print("URDF Description: ", urdf_file.description)
+        print("URDF Created At: ", urdf_file.created_at)
+        print("URDF Root Path: ", urdf_file._root_path)
+        print("URDF Root Path: ", urdf_file._urdf_filename)
+
+        atlas_file: ResourceFile = resource.download(name="atlas_description_test")
+        print("Atlas File: ", atlas_file.filename)
+        print("Atlas Description: ", atlas_file.description)
+        print("Atlas Created At: ", atlas_file.created_at)
+
+        
+        """
         humalab_config = HumalabConfig()
         base_url = humalab_config.base_url
         api_key = humalab_config.api_key
@@ -147,3 +214,4 @@ if __name__ == "__main__":
         with open(filename, "wb") as f:
             f.write(file_content)
         print(f"Resource file downloaded: {filename}")
+        """
