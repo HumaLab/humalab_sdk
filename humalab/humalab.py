@@ -2,7 +2,7 @@ from contextlib import contextmanager
 
 from humalab.assets.files.resource_file import ResourceFile
 from humalab.assets.files.urdf_file import URDFFile
-from humalab.assets.resource import ResourceManager
+from humalab.assets.resource_manager import ResourceManager
 from humalab.run import Run
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
