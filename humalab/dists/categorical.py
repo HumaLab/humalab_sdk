@@ -20,6 +20,9 @@ class Categorical(Distribution):
         super().__init__(generator=generator)
         self._choices = choices
         self._size = size
+        if weights is not None and np.isclose(sum(weights), 1.0):
+            weight_sum = sum(weights)
+            weights = [w / weight_sum for w in weights]
         self._weights = weights
 
     def _sample(self) -> int | float | np.ndarray:
