@@ -40,7 +40,7 @@ Repository = "https://github.com/humalab/humalab_sdk"
 humalab = "humalab.humalab:main"
 
 [tool.setuptools]
-packages = ["humalab", "humalab.dists", "humalab.metrics", "humalab.assets"]
+packages = ["humalab", "humalab.dists", "humalab.metrics", "humalab.assets", "humalab.evaluators"]
 include-package-data = true
 
 [tool.setuptools.package-data]
