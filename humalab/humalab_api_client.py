@@ -271,3 +271,430 @@ class HumaLabApiClient:
         
         response = self.get(endpoint)
         return response.json()
+    
+    # Run CI API methods
+    
+    def create_project(self, name: str, description: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Create a new project.
+        
+        Args:
+            name: Project name
+            description: Optional project description
+            
+        Returns:
+            Created project data
+        """
+        data = {"name": name}
+        if description:
+            data["description"] = description
+            
+        response = self.post("/projects", data=data)
+        return response.json()
+    
+    def get_projects(
+        self, 
+        limit: int = 20, 
+        offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get list of projects.
+        
+        Args:
+            limit: Maximum number of projects to return
+            offset: Number of projects to skip
+            
+        Returns:
+            Project list with pagination info
+        """
+        params = {"limit": limit, "offset": offset}
+        response = self.get("/projects", params=params)
+        return response.json()
+    
+    def get_project(self, project_id: str) -> Dict[str, Any]:
+        """
+        Get a specific project.
+        
+        Args:
+            project_id: Project ID
+            
+        Returns:
+            Project data
+        """
+        response = self.get(f"/projects/{project_id}")
+        return response.json()
+    
+    def delete_project(self, project_id: str) -> None:
+        """
+        Delete a project.
+        
+        Args:
+            project_id: Project ID
+        """
+        self.delete(f"/projects/{project_id}")
+    
+    def create_run(
+        self, 
+        name: str, 
+        project_id: str,
+        description: Optional[str] = None,
+        arguments: Optional[List[Dict[str, str]]] = None,
+        tags: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new run.
+        
+        Args:
+            name: Run name
+            project_id: Project ID
+            description: Optional run description
+            arguments: Optional list of key-value arguments
+            tags: Optional list of tags
+            
+        Returns:
+            Created run data with runId
+        """
+        data = {
+            "name": name,
+            "project_id": project_id,
+            "arguments": arguments or [],
+            "tags": tags or []
+        }
+        if description:
+            data["description"] = description
+            
+        response = self.post("/runs", data=data)
+        return response.json()
+    
+    def get_runs(
+        self,
+        project_id: Optional[str] = None,
+        status: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get list of runs.
+        
+        Args:
+            project_id: Filter by project ID
+            status: Filter by status (running, finished, failed, killed)
+            tags: Filter by tags
+            limit: Maximum number of runs to return
+            offset: Number of runs to skip
+            
+        Returns:
+            Run list with pagination info
+        """
+        params = {"limit": limit, "offset": offset}
+        if project_id:
+            params["project_id"] = project_id
+        if status:
+            params["status"] = status
+        if tags:
+            params["tags"] = ",".join(tags)
+            
+        response = self.get("/runs", params=params)
+        return response.json()
+    
+    def get_run(self, run_id: str) -> Dict[str, Any]:
+        """
+        Get a specific run.
+        
+        Args:
+            run_id: Run ID
+            
+        Returns:
+            Run data
+        """
+        response = self.get(f"/runs/{run_id}")
+        return response.json()
+    
+    def update_run(
+        self,
+        run_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        status: Optional[str] = None,
+        arguments: Optional[List[Dict[str, str]]] = None,
+        tags: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Update a run.
+        
+        Args:
+            run_id: Run ID
+            name: Optional new name
+            description: Optional new description
+            status: Optional new status
+            arguments: Optional new arguments
+            tags: Optional new tags
+            
+        Returns:
+            Updated run data
+        """
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if description is not None:
+            data["description"] = description
+        if status is not None:
+            data["status"] = status
+        if arguments is not None:
+            data["arguments"] = arguments
+        if tags is not None:
+            data["tags"] = tags
+            
+        response = self.put(f"/runs/{run_id}", data=data)
+        return response.json()
+    
+    def create_episode(
+        self, 
+        run_id: str, 
+        episode_name: str,
+        status: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new episode.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+            status: Optional episode status
+            
+        Returns:
+            Created episode data
+        """
+        data = {
+            "episode_name": episode_name,
+            "run_id": run_id
+        }
+        if status:
+            data["status"] = status
+            
+        response = self.post("/episodes", data=data)
+        return response.json()
+    
+    def get_episodes(
+        self,
+        run_id: Optional[str] = None,
+        status: Optional[str] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get list of episodes.
+        
+        Args:
+            run_id: Filter by run ID
+            status: Filter by status
+            limit: Maximum number of episodes to return
+            offset: Number of episodes to skip
+            
+        Returns:
+            Episode list with pagination info
+        """
+        params = {"limit": limit, "offset": offset}
+        if run_id:
+            params["run_id"] = run_id
+        if status:
+            params["status"] = status
+            
+        response = self.get("/episodes", params=params)
+        return response.json()
+    
+    def get_episode(self, run_id: str, episode_name: str) -> Dict[str, Any]:
+        """
+        Get a specific episode.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+            
+        Returns:
+            Episode data
+        """
+        response = self.get(f"/episodes/{run_id}/{episode_name}")
+        return response.json()
+    
+    def update_episode(
+        self,
+        run_id: str,
+        episode_name: str,
+        status: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Update an episode.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+            status: Optional new status
+            
+        Returns:
+            Updated episode data
+        """
+        data = {}
+        if status is not None:
+            data["status"] = status
+            
+        response = self.put(f"/episodes/{run_id}/{episode_name}", data=data)
+        return response.json()
+    
+    def delete_episode(self, run_id: str, episode_name: str) -> None:
+        """
+        Delete an episode.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+        """
+        self.delete(f"/episodes/{run_id}/{episode_name}")
+    
+    def upload_blob(
+        self,
+        artifact_key: str,
+        run_id: str,
+        file_path: str,
+        artifact_type: str,
+        episode_name: Optional[str] = None,
+        description: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Upload a blob artifact (image/video).
+        
+        Args:
+            artifact_key: Artifact key identifier
+            run_id: Run ID
+            file_path: Path to file to upload
+            artifact_type: Type of artifact ('image' or 'video')
+            episode_name: Optional episode name (None for run-level artifacts)
+            description: Optional description
+            
+        Returns:
+            Created artifact data
+        """
+        with open(file_path, 'rb') as f:
+            files = {'file': f}
+            form_data = {
+                'artifact_key': artifact_key,
+                'run_id': run_id,
+                'artifact_type': artifact_type
+            }
+            if episode_name:
+                form_data['episode_name'] = episode_name
+            if description:
+                form_data['description'] = description
+                
+            response = self.post("/artifacts/blob/upload", files=files, data=form_data)
+            return response.json()
+    
+    def upsert_metrics(
+        self,
+        artifact_key: str,
+        run_id: str,
+        metric_type: str,
+        metric_data: List[Dict[str, Any]],
+        episode_name: Optional[str] = None,
+        description: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Upsert metrics artifact (create or append).
+        
+        Args:
+            artifact_key: Artifact key identifier
+            run_id: Run ID
+            metric_type: Type of metric display ('line', 'bar', 'scatter', 'gauge', 'counter')
+            metric_data: List of metric data points with 'key', 'values', 'timestamp'
+            episode_name: Optional episode name (None for run-level artifacts)
+            description: Optional description
+            
+        Returns:
+            Created/updated artifact data
+        """
+        data = {
+            "artifact_key": artifact_key,
+            "run_id": run_id,
+            "metric_type": metric_type,
+            "metric_data": metric_data
+        }
+        if episode_name:
+            data["episode_name"] = episode_name
+        if description:
+            data["description"] = description
+            
+        response = self.post("/artifacts/metrics", data=data)
+        return response.json()
+    
+    def get_artifacts(
+        self,
+        run_id: Optional[str] = None,
+        episode_name: Optional[str] = None,
+        artifact_type: Optional[str] = None,
+        limit: int = 20,
+        offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get list of artifacts.
+        
+        Args:
+            run_id: Filter by run ID
+            episode_name: Filter by episode name
+            artifact_type: Filter by artifact type
+            limit: Maximum number of artifacts to return
+            offset: Number of artifacts to skip
+            
+        Returns:
+            Artifact list with pagination info
+        """
+        params = {"limit": limit, "offset": offset}
+        if run_id:
+            params["run_id"] = run_id
+        if episode_name:
+            params["episode_name"] = episode_name
+        if artifact_type:
+            params["artifact_type"] = artifact_type
+            
+        response = self.get("/artifacts", params=params)
+        return response.json()
+    
+    def get_artifact(
+        self, 
+        run_id: str, 
+        episode_name: str, 
+        artifact_key: str
+    ) -> Dict[str, Any]:
+        """
+        Get a specific artifact.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+            artifact_key: Artifact key
+            
+        Returns:
+            Artifact data
+        """
+        response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}")
+        return response.json()
+    
+    def download_artifact_blob(
+        self, 
+        run_id: str, 
+        episode_name: str, 
+        artifact_key: str
+    ) -> bytes:
+        """
+        Download a blob artifact file.
+        
+        Args:
+            run_id: Run ID
+            episode_name: Episode name
+            artifact_key: Artifact key
+            
+        Returns:
+            Artifact file content as bytes
+        """
+        response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}/download")
+        return response.content
