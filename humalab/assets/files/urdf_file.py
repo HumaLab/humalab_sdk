@@ -25,7 +25,7 @@ class URDFFile(ResourceFile):
         
     def _extract(self):
         working_path = os.path.dirname(self._filename)
-        if not os.path.exists(working_path):
+        if os.path.exists(self._filename):
             _, ext = os.path.splitext(self._filename)
             ext = ext.lstrip('.')  # Remove leading dot
             if ext.lower() != "urdf":

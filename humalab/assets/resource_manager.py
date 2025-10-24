@@ -34,10 +34,10 @@ class ResourceManager:
                  name: str, 
                  version: int | None=None) -> Any:
         resource = self._api_client.get_resource(name=name, version=version)
-        file_content = self._api_client.download_resource(name="lerobot")
         filename = os.path.basename(resource['resource_url'])
         filename = os.path.join(self._asset_dir(name, resource["version"]), filename)
         if self._create_asset_dir(name, resource["version"]):
+            file_content = self._api_client.download_resource(name="lerobot")
             with open(filename, "wb") as f:
                 f.write(file_content)
         

@@ -7,6 +7,7 @@ from humalab.run import Run
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
 from humalab.constants import EpisodeStatus
+import requests
 
 import uuid
 import os
@@ -40,6 +41,24 @@ def init(entity: str | None = None,
          timeout: float | None = None,
          num_env: int | None = None
          ) -> Generator[Run, None, None]:
+    """
+    Initialize a new HumaLab run.
+    
+    Args:
+        entity: The entity (user or team) under which to create the run.
+        project: The project name under which to create the run.
+        name: The name of the run.
+        description: A description of the run.
+        id: The unique identifier for the run. If None, a new UUID will be generated.
+        tags: A list of tags to associate with the run.
+        scenario: The scenario configuration as a string, list, or dict.
+        scenario_id: The unique identifier of a pre-defined scenario to use.
+        base_url: The base URL of the HumaLab server.
+        api_key: The API key for authentication.
+        seed: An optional seed for scenario randomization.
+        timeout: The timeout for API requests.
+        num_env: The number of parallel environments to run.
+    """
     global _cur_run
     run = None
     try:
@@ -60,22 +79,52 @@ def init(entity: str | None = None,
         final_scenario = _pull_scenario(client=api_client, 
                                         scenario=scenario, 
                                         scenario_id=scenario_id)
+        
+        project_resp = api_client.create_project(name=project)
+
         scenario_inst = Scenario()
         scenario_inst.init(run_id=id, 
                            scenario=final_scenario, 
                            seed=seed, 
                            episode_id=str(uuid.uuid4()),
                            num_env=num_env)
+        try:
+            run_response = api_client.get_run(run_id=id)
+            api_client.update_run(
+                run_id=run_response['run_id'],
+            )
+
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                # If not found then create a new run,
+                # so ignore not found error.
+                run_response = None
+            else:
+                # Otherwise re-raise the exception.
+                raise
+
+        if run_response is None:
+            run_response = api_client.create_run(name=name,
+                                                 project_name=project_resp['name'],
+                                                 description=description,
+                                                 tags=tags)
+            id = run_response['run_id']
+            api_client.update_run(
+                run_id=id,
+                description=description,
+            )
+        print("create_run response: ", run_response)
 
         run = Run(
-            entity=entity,
-            project=project,
-            name=name,
-            description=description,
-            id=id,
-            tags=tags,
+            entity=run_response['created_by'],
+            project=project_resp['name'],
+            name=run_response["name"],
+            description=run_response.get("description"),
+            id=run_response['run_id'],
+            tags=run_response.get("tags"),
             scenario=scenario_inst,
         )
+
         _cur_run = run
         yield run
     finally:
@@ -112,7 +161,7 @@ if __name__ == "__main__":
               name="my first run",
               description="testing the humalab sdk",
               tags=["tag1", "tag2"],
-              scenario_id="cb9668c6-99fe-490c-a97c-e8c1f06b54a6",
+              scenario_id="4ee3b2bb-1968-4b7f-8f96-4c5e64179c08",
               num_env=None) as run:
         print(f"Run ID: {run.id}")
         print(f"Run Name: {run.name}")
@@ -191,7 +240,7 @@ if __name__ == "__main__":
         print("URDF Root Path: ", urdf_file._root_path)
         print("URDF Root Path: ", urdf_file._urdf_filename)
 
-        atlas_file: ResourceFile = resource.download(name="atlas_description_test")
+        atlas_file: ResourceFile = resource.download(name="atlas")
         print("Atlas File: ", atlas_file.filename)
         print("Atlas Description: ", atlas_file.description)
         print("Atlas Created At: ", atlas_file.created_at)

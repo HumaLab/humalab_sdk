@@ -311,32 +311,32 @@ class HumaLabApiClient:
         response = self.get("/projects", params=params)
         return response.json()
     
-    def get_project(self, project_id: str) -> Dict[str, Any]:
+    def get_project(self, name: str) -> Dict[str, Any]:
         """
         Get a specific project.
         
         Args:
-            project_id: Project ID
+            name: Project name
             
         Returns:
             Project data
         """
-        response = self.get(f"/projects/{project_id}")
+        response = self.get(f"/projects/{name}")
         return response.json()
     
-    def delete_project(self, project_id: str) -> None:
+    def delete_project(self, name: str) -> None:
         """
         Delete a project.
         
         Args:
-            project_id: Project ID
+            name: Project name
         """
-        self.delete(f"/projects/{project_id}")
+        self.delete(f"/projects/{name}")
     
     def create_run(
         self, 
         name: str, 
-        project_id: str,
+        project_name: str,
         description: Optional[str] = None,
         arguments: Optional[List[Dict[str, str]]] = None,
         tags: Optional[List[str]] = None
@@ -346,7 +346,7 @@ class HumaLabApiClient:
         
         Args:
             name: Run name
-            project_id: Project ID
+            project_name: Project name
             description: Optional run description
             arguments: Optional list of key-value arguments
             tags: Optional list of tags
@@ -356,7 +356,7 @@ class HumaLabApiClient:
         """
         data = {
             "name": name,
-            "project_id": project_id,
+            "project_name": project_name,
             "arguments": arguments or [],
             "tags": tags or []
         }
@@ -368,7 +368,7 @@ class HumaLabApiClient:
     
     def get_runs(
         self,
-        project_id: Optional[str] = None,
+        project_name: Optional[str],
         status: Optional[str] = None,
         tags: Optional[List[str]] = None,
         limit: int = 20,
@@ -378,7 +378,7 @@ class HumaLabApiClient:
         Get list of runs.
         
         Args:
-            project_id: Filter by project ID
+            project_name: Filter by project name
             status: Filter by status (running, finished, failed, killed)
             tags: Filter by tags
             limit: Maximum number of runs to return
@@ -388,8 +388,9 @@ class HumaLabApiClient:
             Run list with pagination info
         """
         params = {"limit": limit, "offset": offset}
-        if project_id:
-            params["project_id"] = project_id
+        if not project_name:
+            raise ValueError("project_name is required to get runs.")
+        params["project_name"] = project_name
         if status:
             params["status"] = status
         if tags:
