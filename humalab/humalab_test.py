@@ -78,7 +78,6 @@ class HumalabTest(unittest.TestCase):
     def test_init_should_create_run_with_provided_parameters(self, mock_run_class, mock_scenario_class, mock_config_class, mock_api_client_class):
         """Test that init() creates a Run with provided parameters."""
         # Pre-condition
-        entity = "test_entity"
         project = "test_project"
         name = "test_name"
         description = "test_description"
@@ -87,7 +86,6 @@ class HumalabTest(unittest.TestCase):
         scenario_data = {"key": "value"}
 
         mock_config = Mock()
-        mock_config.entity = "default_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -104,7 +102,6 @@ class HumalabTest(unittest.TestCase):
 
         # In-test
         with humalab.init(
-            entity=entity,
             project=project,
             name=name,
             description=description,
@@ -116,7 +113,6 @@ class HumalabTest(unittest.TestCase):
             self.assertEqual(run, mock_run_inst)
             mock_run_class.assert_called_once()
             call_kwargs = mock_run_class.call_args.kwargs
-            self.assertEqual(call_kwargs['entity'], entity)
             self.assertEqual(call_kwargs['project'], project)
             self.assertEqual(call_kwargs['name'], name)
             self.assertEqual(call_kwargs['description'], description)
@@ -135,7 +131,6 @@ class HumalabTest(unittest.TestCase):
         """Test that init() uses config defaults when parameters are not provided."""
         # Pre-condition
         mock_config = Mock()
-        mock_config.entity = "config_entity"
         mock_config.base_url = "http://config:8000"
         mock_config.api_key = "config_key"
         mock_config.timeout = 60.0
@@ -154,7 +149,6 @@ class HumalabTest(unittest.TestCase):
         with humalab.init() as run:
             # Post-condition
             call_kwargs = mock_run_class.call_args.kwargs
-            self.assertEqual(call_kwargs['entity'], "config_entity")
             self.assertEqual(call_kwargs['project'], "default")
             self.assertEqual(call_kwargs['name'], "")
             self.assertEqual(call_kwargs['description'], "")
@@ -171,7 +165,6 @@ class HumalabTest(unittest.TestCase):
         """Test that init() generates a UUID when id is not provided."""
         # Pre-condition
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -207,7 +200,6 @@ class HumalabTest(unittest.TestCase):
         scenario_data = {"key": "value"}
 
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -243,7 +235,6 @@ class HumalabTest(unittest.TestCase):
         yaml_content = "scenario: from_api"
 
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -277,7 +268,6 @@ class HumalabTest(unittest.TestCase):
         """Test that init() sets the global _cur_run variable."""
         # Pre-condition
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -308,7 +298,6 @@ class HumalabTest(unittest.TestCase):
         """Test that init() calls finish even when exception occurs in context."""
         # Pre-condition
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "test_key"
         mock_config.timeout = 30.0
@@ -343,7 +332,6 @@ class HumalabTest(unittest.TestCase):
         timeout = 120.0
 
         mock_config = Mock()
-        mock_config.entity = "test_entity"
         mock_config.base_url = "http://localhost:8000"
         mock_config.api_key = "default_key"
         mock_config.timeout = 30.0
