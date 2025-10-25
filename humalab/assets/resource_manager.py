@@ -31,13 +31,14 @@ class ResourceManager:
         return False
 
     def download(self,
+                 project: str,
                  name: str, 
                  version: int | None=None) -> Any:
-        resource = self._api_client.get_resource(name=name, version=version)
+        resource = self._api_client.get_resource(project_name=project, name=name, version=version)
         filename = os.path.basename(resource['resource_url'])
         filename = os.path.join(self._asset_dir(name, resource["version"]), filename)
         if self._create_asset_dir(name, resource["version"]):
-            file_content = self._api_client.download_resource(name="lerobot")
+            file_content = self._api_client.download_resource(project_name=project, name="lerobot")
             with open(filename, "wb") as f:
                 f.write(file_content)
         

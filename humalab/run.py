@@ -8,7 +8,6 @@ from humalab.scenario import Scenario
 
 class Run:
     def __init__(self,
-                 entity: str,
                  project: str,
                  scenario: Scenario,
                  name: str | None = None,
@@ -20,7 +19,6 @@ class Run:
         Initialize a new Run instance.
         
         Args:
-            entity (str): The entity (user or team) under which the run is created.
             project (str): The project name under which the run is created.
             scenario (Scenario): The scenario instance for the run.
             name (str | None): The name of the run.
@@ -28,7 +26,6 @@ class Run:
             id (str | None): The unique identifier for the run. If None, a UUID is generated.
             tags (list[str] | None): A list of tags associated with the run.
         """
-        self._entity = entity
         self._project = project
         self._id = id or str(uuid.uuid4())
         self._name = name or ""
@@ -41,15 +38,6 @@ class Run:
         self._scenario = scenario
 
         self._metrics = {}
-    
-    @property
-    def entity(self) -> str:
-        """The entity (user or team) under which the run is created.
-        
-        Returns:
-            str: The entity name.
-        """
-        return self._entity
     
     @property
     def project(self) -> str:

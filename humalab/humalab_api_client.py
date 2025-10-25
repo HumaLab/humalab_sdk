@@ -114,11 +114,23 @@ class HumaLabApiClient:
     def delete(self, endpoint: str, **kwargs) -> requests.Response:
         """Make a DELETE request."""
         return self._make_request("DELETE", endpoint, **kwargs)
-    
+
+    # User Authentication API methods
+    def validate_token(self) -> Dict[str, Any]:
+        """
+        Validate JWT token and return user info.
+
+        Returns:
+            User information from the validated token
+        """
+        response = self.get("/api-key/validate")
+        return response.json()
+
     # Convenience methods for common API operations
     
     def get_resources(
-        self, 
+        self,
+        project_name: str,
         resource_types: Optional[str] = None,
         limit: int = 20,
         offset: int = 0,
@@ -126,89 +138,98 @@ class HumaLabApiClient:
     ) -> Dict[str, Any]:
         """
         Get list of all resources.
-        
+
         Args:
+            project_name: Project name (required)
             resource_types: Comma-separated resource types to filter by
             limit: Maximum number of resources to return
             offset: Number of resources to skip
             latest_only: If true, only return latest version of each resource
-            
+
         Returns:
             Resource list with pagination info
         """
         params = {
+            "project_name": project_name,
             "limit": limit,
             "offset": offset,
             "latest_only": latest_only
         }
         if resource_types:
             params["resource_types"] = resource_types
-            
+
         response = self.get("/resources", params=params)
         return response.json()
     
-    def get_resource(self, name: str, version: Optional[int] = None) -> Dict[str, Any]:
+    def get_resource(self, name: str, project_name: str, version: Optional[int] = None) -> Dict[str, Any]:
         """
         Get a specific resource.
-        
+
         Args:
             name: Resource name
-            version: Specific version (defaults to latest)
-            
+            project_name: Project name (required)
+            version: Optional specific version (defaults to latest)
+
         Returns:
             Resource data
         """
         if version is not None:
             endpoint = f"/resources/{name}/{version}"
+            params = {"project_name": project_name}
         else:
             endpoint = f"/resources/{name}"
-        
-        response = self.get(endpoint)
+            params = {"project_name": project_name}
+
+        response = self.get(endpoint, params=params)
         return response.json()
     
     def download_resource(
-        self, 
-        name: str, 
+        self,
+        name: str,
+        project_name: str,
         version: Optional[int] = None
     ) -> bytes:
         """
         Download a resource file.
-        
+
         Args:
             name: Resource name
-            version: Specific version (defaults to latest)
-            
+            project_name: Project name (required)
+            version: Optional specific version (defaults to latest)
+
         Returns:
             Resource file content as bytes
         """
+        endpoint = f"/resources/{name}/download"
+        params = {"project_name": project_name}
         if version is not None:
-            endpoint = f"/resources/{name}/download?version={version}"
-        else:
-            endpoint = f"/resources/{name}/download"
+            params["version"] = str(version)
 
-        response = self.get(endpoint)
+        response = self.get(endpoint, params=params)
         return response.content
     
     def upload_resource(
-        self, 
-        name: str, 
-        file_path: str, 
+        self,
+        name: str,
+        file_path: str,
         resource_type: str,
+        project_name: str,
         description: Optional[str] = None,
         filename: Optional[str] = None,
         allow_duplicate_name: bool = False
     ) -> Dict[str, Any]:
         """
         Upload a resource file.
-        
+
         Args:
             name: Resource name
             file_path: Path to file to upload
             resource_type: Type of resource (urdf, mjcf, etc.)
+            project_name: Project name (required)
             description: Optional description
             filename: Optional custom filename
             allow_duplicate_name: Allow creating new version with existing name
-            
+
         Returns:
             Created resource data
         """
@@ -219,12 +240,13 @@ class HumaLabApiClient:
                 data['description'] = description
             if filename:
                 data['filename'] = filename
-                
+
             params = {
                 'resource_type': resource_type,
+                'project_name': project_name,
                 'allow_duplicate_name': allow_duplicate_name
             }
-            
+
             response = self.post(f"/resources/{name}/upload", files=files, params=params)
             return response.json()
     
@@ -232,44 +254,62 @@ class HumaLabApiClient:
         """Get list of all available resource types."""
         response = self.get("/resources/types")
         return response.json()
-    
-    def delete_resource(self, name: str, version: Optional[int] = None) -> None:
+
+    def get_scenarios(
+        self,
+        project_name: str,
+        skip: int = 0,
+        limit: int = 10,
+        include_inactive: bool = False,
+        search: Optional[str] = None,
+        status_filter: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
-        Delete a resource.
-        
+        Get list of scenarios with pagination and filtering.
+
         Args:
-            name: Resource name
-            version: Specific version to delete (if None, deletes all versions)
+            project_name: Project name (required)
+            skip: Number of scenarios to skip for pagination
+            limit: Maximum number of scenarios to return (1-100)
+            include_inactive: Include inactive scenarios in results
+            search: Search term to filter by name, description, or UUID
+            status_filter: Filter by specific status
+
+        Returns:
+            Paginated list of scenarios
         """
-        if version is not None:
-            endpoint = f"/resources/{name}/{version}"
-        else:
-            endpoint = f"/resources/{name}"
-        
-        self.delete(endpoint)
-    
-    def get_scenarios(self) -> List[Dict[str, Any]]:
-        """Get list of all scenarios."""
-        response = self.get("/scenarios")
+        params = {
+            "project_name": project_name,
+            "skip": skip,
+            "limit": limit,
+            "include_inactive": include_inactive
+        }
+        if search:
+            params["search"] = search
+        if status_filter:
+            params["status_filter"] = status_filter
+
+        response = self.get("/scenarios", params=params)
         return response.json()
     
-    def get_scenario(self, uuid: str, version: Optional[int] = None) -> Dict[str, Any]:
+    def get_scenario(self, uuid: str, project_name: str, version: Optional[int] = None) -> Dict[str, Any]:
         """
         Get a specific scenario.
-        
+
         Args:
             uuid: Scenario UUID
-            version: Specific version (defaults to latest)
-            
+            project_name: Project name (required)
+            version: Optional specific version (defaults to latest)
+
         Returns:
             Scenario data
         """
+        endpoint = f"/scenarios/{uuid}"
+        params = {"project_name": project_name}
         if version is not None:
-            endpoint = f"/scenarios/{uuid}/{version}"
-        else:
-            endpoint = f"/scenarios/{uuid}"
-        
-        response = self.get(endpoint)
+            params["scenario_version"] = str(version)
+
+        response = self.get(endpoint, params=params)
         return response.json()
     
     # Run CI API methods
@@ -324,14 +364,23 @@ class HumaLabApiClient:
         response = self.get(f"/projects/{name}")
         return response.json()
     
-    def delete_project(self, name: str) -> None:
+    def update_project(self, name: str, description: Optional[str] = None) -> Dict[str, Any]:
         """
-        Delete a project.
-        
+        Update a project.
+
         Args:
             name: Project name
+            description: Optional new description
+
+        Returns:
+            Updated project data
         """
-        self.delete(f"/projects/{name}")
+        data = {}
+        if description is not None:
+            data["description"] = description
+
+        response = self.put(f"/projects/{name}", data=data)
+        return response.json()
     
     def create_run(
         self, 
@@ -423,7 +472,7 @@ class HumaLabApiClient:
     ) -> Dict[str, Any]:
         """
         Update a run.
-        
+
         Args:
             run_id: Run ID
             name: Optional new name
@@ -431,7 +480,7 @@ class HumaLabApiClient:
             status: Optional new status
             arguments: Optional new arguments
             tags: Optional new tags
-            
+
         Returns:
             Updated run data
         """
@@ -446,7 +495,7 @@ class HumaLabApiClient:
             data["arguments"] = arguments
         if tags is not None:
             data["tags"] = tags
-            
+
         response = self.put(f"/runs/{run_id}", data=data)
         return response.json()
     
@@ -679,23 +728,3 @@ class HumaLabApiClient:
         """
         response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}")
         return response.json()
-    
-    def download_artifact_blob(
-        self, 
-        run_id: str, 
-        episode_name: str, 
-        artifact_key: str
-    ) -> bytes:
-        """
-        Download a blob artifact file.
-        
-        Args:
-            run_id: Run ID
-            episode_name: Episode name
-            artifact_key: Artifact key
-            
-        Returns:
-            Artifact file content as bytes
-        """
-        response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}/download")
-        return response.content

@@ -6,13 +6,11 @@ class HumalabConfig:
     def __init__(self):
         self._config = {
             "workspace_path": "",
-            "entity": "",
             "base_url": "",
             "api_key": "",
             "timeout": 30.0,
         }
         self._workspace_path = ""
-        self._entity = ""
         self._base_url = ""
         self._api_key = ""
         self._timeout = 30.0
@@ -27,7 +25,6 @@ class HumalabConfig:
         with open(config_path, "r") as f:
             self._config = yaml.safe_load(f)
         self._workspace_path = os.path.expanduser(self._config["workspace_path"]) if self._config and "workspace_path" in self._config else home_path
-        self._entity = self._config["entity"] if self._config and "entity" in self._config else ""
         self._base_url = self._config["base_url"] if self._config and "base_url" in self._config else ""
         self._api_key = self._config["api_key"] if self._config and "api_key" in self._config else ""
         self._timeout = self._config["timeout"] if self._config and "timeout" in self._config else 30.0
@@ -43,16 +40,6 @@ class HumalabConfig:
     def workspace_path(self, path: str) -> None:
         self._workspace_path = path
         self._config["workspace_path"] = path
-        self._save()
-
-    @property
-    def entity(self) -> str:
-        return str(self._entity)
-
-    @entity.setter
-    def entity(self, entity: str) -> None:
-        self._entity = entity
-        self._config["entity"] = entity
         self._save()
 
     @property
