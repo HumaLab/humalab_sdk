@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 
+from omegaconf import OmegaConf
+
 from humalab.run import Run
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
@@ -7,7 +9,6 @@ from humalab.constants import EpisodeStatus
 import requests
 
 import uuid
-import os
 
 from collections.abc import Generator
 
@@ -44,7 +45,8 @@ def init(project: str | None = None,
          api_key: str | None = None,
          seed: int | None=None,
          timeout: float | None = None,
-         num_env: int | None = None
+         # num_env: int | None = None,
+         auto_create_scenario: bool = False,
          ) -> Generator[Run, None, None]:
     """
     Initialize a new HumaLab run.
@@ -61,7 +63,8 @@ def init(project: str | None = None,
         api_key: The API key for authentication.
         seed: An optional seed for scenario randomization.
         timeout: The timeout for API requests.
-        num_env: The number of parallel environments to run.
+        # num_env: The number of parallel environments to run. (Not supported yet.)
+        auto_create_scenario: Whether to automatically create the scenario if it does not exist.
     """
     global _cur_run
     run = None
@@ -91,7 +94,16 @@ def init(project: str | None = None,
                            scenario=final_scenario, 
                            seed=seed, 
                            episode_id=str(uuid.uuid4()),
-                           num_env=num_env)
+                           #num_env=num_env
+                           )
+        if scenario_id is None and scenario is not None and auto_create_scenario:
+            scenario_response = api_client.create_scenario(
+                project_name=project_resp['name'],
+                name=f"{name} scenario",
+                description="Auto-created scenario",
+                yaml_content=OmegaConf.to_yaml(scenario_inst.template),
+            )
+            scenario_id = scenario_response['uuid']
         try:
             run_response = api_client.get_run(run_id=id)
             api_client.update_run(
@@ -117,7 +129,6 @@ def init(project: str | None = None,
                 run_id=id,
                 description=description,
             )
-        print("create_run response: ", run_response)
 
         run = Run(
             project=project_resp['name'],

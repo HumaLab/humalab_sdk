@@ -29,6 +29,42 @@ class TruncatedGaussian(Distribution):
         self._high = high
         self._size = size
 
+    @staticmethod
+    def validate(dimensions: int, *args) -> bool:
+        arg1 = args[0]
+        arg2 = args[1]
+        arg3 = args[2]
+        arg4 = args[3]
+        if dimensions == 0:
+            if not isinstance(arg1, (int, float)):
+                return False
+            if not isinstance(arg2, (int, float)):
+                return False
+            if not isinstance(arg3, (int, float)):
+                return False
+            if not isinstance(arg4, (int, float)):
+                return False
+            return True
+        if dimensions == -1:
+            return True
+        if not isinstance(arg1, (int, float)):
+            if isinstance(arg1, (list, np.ndarray)):
+                if len(arg1) > dimensions:
+                    return False
+        if not isinstance(arg2, (int, float)):
+            if isinstance(arg2, (list, np.ndarray)):
+                if len(arg2) > dimensions:
+                    return False
+        if not isinstance(arg3, (int, float)):
+            if isinstance(arg3, (list, np.ndarray)):
+                if len(arg3) > dimensions:
+                    return False
+        if not isinstance(arg4, (int, float)):
+            if isinstance(arg4, (list, np.ndarray)):
+                if len(arg4) > dimensions:
+                    return False
+        return True
+    
     def _sample(self) -> int | float | np.ndarray:
         samples = self._generator.normal(loc=self._loc, scale=self._scale, size=self._size)
         mask = (samples < self._low) | (samples > self._high)

@@ -311,7 +311,41 @@ class HumaLabApiClient:
 
         response = self.get(endpoint, params=params)
         return response.json()
-    
+
+    def create_scenario(
+        self,
+        name: str,
+        project_name: str,
+        description: Optional[str] = None,
+        yaml_content: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new scenario.
+
+        Args:
+            name: Scenario name
+            project_name: Project name to organize the scenario (required)
+            description: Optional scenario description
+            yaml_content: Optional YAML content defining the scenario
+
+        Returns:
+            Created scenario data with UUID and version
+
+        Raises:
+            HTTPException: If scenario name already exists for the project
+        """
+        data = {
+            "name": name,
+            "project_name": project_name
+        }
+        if description:
+            data["description"] = description
+        if yaml_content:
+            data["yaml_content"] = yaml_content
+
+        response = self.post("/scenarios", data=data)
+        return response.json()
+
     # Run CI API methods
     
     def create_project(self, name: str, description: Optional[str] = None) -> Dict[str, Any]:

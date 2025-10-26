@@ -20,6 +20,21 @@ class Bernoulli(Distribution):
         self._p = p
         self._size = size
 
+    @staticmethod
+    def validate(dimensions: int, *args) -> bool:
+        arg1 = args[0]
+        if dimensions == 0:
+            if not isinstance(arg1, (int, float)):
+                return False
+            return True
+        if dimensions == -1:
+            return True
+        if not isinstance(arg1, (int, float)):
+            if isinstance(arg1, (list, np.ndarray)):
+                if len(arg1) > dimensions:
+                    return False
+        return True
+
     def _sample(self) -> int | float | np.ndarray:
         return self._generator.binomial(n=1, p=self._p, size=self._size)
 
