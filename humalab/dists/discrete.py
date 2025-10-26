@@ -26,6 +26,28 @@ class Discrete(Distribution):
         self._high = np.array(high)
         self._size = size
         self._endpoint = endpoint if endpoint is not None else True
+    
+    @staticmethod
+    def validate(dimensions: int, *args) -> bool:
+        arg1 = args[0]
+        arg2 = args[1]
+        if dimensions == 0:
+            if not isinstance(arg1, int):
+                return False
+            if not isinstance(arg2, int):
+                return False
+            return True
+        if dimensions == -1:
+            return True
+        if not isinstance(arg1, int):
+            if isinstance(arg1, (list, np.ndarray)):
+                if len(arg1) > dimensions:
+                    return False
+        if not isinstance(arg2, int):
+            if isinstance(arg2, (list, np.ndarray)):
+                if len(arg2) > dimensions:
+                    return False
+        return True
 
     def _sample(self) -> int | float | np.ndarray:
         return self._generator.integers(self._low, self._high, size=self._size, endpoint=self._endpoint)

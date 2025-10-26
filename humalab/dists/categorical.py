@@ -25,6 +25,10 @@ class Categorical(Distribution):
             weights = [w / weight_sum for w in weights]
         self._weights = weights
 
+    @staticmethod
+    def validate(dimensions: int, *args) -> bool:
+        return True
+
     def _sample(self) -> int | float | np.ndarray:
         return self._generator.choice(self._choices, size=self._size, p=self._weights)
 
