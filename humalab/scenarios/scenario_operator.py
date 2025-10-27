@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from humalab.humalab_api_client import HumaLabApiClient
 from humalab.scenarios.scenario import Scenario
+from humalab.constants import DEFAULT_PROJECT
 
 @dataclass
 class ScenarioMetadata:
@@ -15,7 +16,7 @@ class ScenarioMetadata:
     updated_at: str
 
 
-def list_scenarios(project: str = "default",
+def list_scenarios(project: str = DEFAULT_PROJECT,
                    limit: int = 20,
                    offset: int = 0,     
                    include_inactive: bool = False,
@@ -61,7 +62,7 @@ def list_scenarios(project: str = "default",
 
 def get_scenario(scenario_id: str,
                  version: int | None = None,
-                 project: str = "default",
+                 project: str = DEFAULT_PROJECT,
                  seed: int | None=None,
                  
                  base_url: str | None = None,

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from humalab.assets.files.resource_file import ResourceFile, ResourceType
 from humalab.assets.archive import extract_archive
+from humalab.constants import DEFAULT_PROJECT
 
 
 class URDFFile(ResourceFile):
@@ -11,7 +12,7 @@ class URDFFile(ResourceFile):
                  name: str, 
                  version: int,
                  filename: str,
-                 project: str = "default",
+                 project: str = DEFAULT_PROJECT,
                  urdf_filename: str | None = None,
                  description: str | None = None,
                  created_at: datetime | None = None,):
