@@ -1,7 +1,8 @@
-from datetime import datetime
 import os
 import glob
-from humalab.assets.files.resource_file import ResourceFile
+from datetime import datetime
+
+from humalab.assets.files.resource_file import ResourceFile, ResourceType
 from humalab.assets.archive import extract_archive
 
 
@@ -10,30 +11,32 @@ class URDFFile(ResourceFile):
                  name: str, 
                  version: int,
                  filename: str,
+                 project: str = "default",
                  urdf_filename: str | None = None,
                  description: str | None = None,
                  created_at: datetime | None = None,):
-        super().__init__(name=name, 
+        super().__init__(project=project,
+                         name=name, 
                          version=version,
                          description=description,
                          filename=filename,
-                         resource_type="URDF", 
+                         resource_type=ResourceType.URDF, 
                          created_at=created_at)
         self._urdf_base_filename = urdf_filename
         self._urdf_filename, self._root_path = self._extract()
         self._urdf_filename = os.path.join(self._urdf_filename, self._urdf_filename)
         
     def _extract(self):
-        working_path = os.path.dirname(self._filename)
-        if os.path.exists(self._filename):
-            _, ext = os.path.splitext(self._filename)
+        working_path = os.path.dirname(self.filename)
+        if os.path.exists(self.filename):
+            _, ext = os.path.splitext(self.filename)
             ext = ext.lstrip('.')  # Remove leading dot
             if ext.lower() != "urdf":
-                extract_archive(self._filename, working_path)
+                extract_archive(self.filename, working_path)
                 try:
-                    os.remove(self._filename)
+                    os.remove(self.filename)
                 except Exception as e:
-                    print(f"Error removing saved file {self._filename}: {e}")
+                    print(f"Error removing saved file {self.filename}: {e}")
         local_filename = self.search_resource_file(self._urdf_base_filename, working_path)
         if local_filename is None:
             raise ValueError(f"Resource filename {self._urdf_base_filename} not found in {working_path}")

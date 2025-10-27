@@ -49,19 +49,19 @@ class TruncatedGaussian(Distribution):
             return True
         if not isinstance(arg1, (int, float)):
             if isinstance(arg1, (list, np.ndarray)):
-                if len(arg1) > dimensions:
+                if len(arg1) != dimensions:
                     return False
         if not isinstance(arg2, (int, float)):
             if isinstance(arg2, (list, np.ndarray)):
-                if len(arg2) > dimensions:
+                if len(arg2) != dimensions:
                     return False
         if not isinstance(arg3, (int, float)):
             if isinstance(arg3, (list, np.ndarray)):
-                if len(arg3) > dimensions:
+                if len(arg3) != dimensions:
                     return False
         if not isinstance(arg4, (int, float)):
             if isinstance(arg4, (list, np.ndarray)):
-                if len(arg4) > dimensions:
+                if len(arg4) != dimensions:
                     return False
         return True
     

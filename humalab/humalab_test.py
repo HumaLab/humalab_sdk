@@ -4,10 +4,10 @@ import uuid
 
 from humalab import humalab
 from humalab.run import Run
-from humalab.scenario import Scenario
+from humalab.scenarios.scenario import Scenario
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
-from humalab.constants import EpisodeStatus
+from humalab.humalab_api_client import EpisodeStatus, RunStatus
 
 
 class HumalabTest(unittest.TestCase):
@@ -30,9 +30,10 @@ class HumalabTest(unittest.TestCase):
         # Pre-condition
         client = Mock()
         scenario = {"key": "value"}
+        project = "test_project"
 
         # In-test
-        result = humalab._pull_scenario(client=client, scenario=scenario, scenario_id=None)
+        result = humalab._pull_scenario(client=client, project=project, scenario=scenario, scenario_id=None)
 
         # Post-condition
         self.assertEqual(result, scenario)
@@ -42,32 +43,34 @@ class HumalabTest(unittest.TestCase):
         """Test that _pull_scenario fetches from API when scenario_id is provided."""
         # Pre-condition
         client = Mock()
+        project = "test_project"
         scenario_id = "test-scenario-id"
         yaml_content = "scenario: test"
         client.get_scenario.return_value = {"yaml_content": yaml_content}
 
         # In-test
-        result = humalab._pull_scenario(client=client, scenario=None, scenario_id=scenario_id)
+        result = humalab._pull_scenario(client=client, project=project, scenario=None, scenario_id=scenario_id)
 
         # Post-condition
         self.assertEqual(result, yaml_content)
-        client.get_scenario.assert_called_once_with(uuid=scenario_id)
+        client.get_scenario.assert_called_once_with(project_name=project, uuid=scenario_id, version=None)
 
     def test_pull_scenario_should_prefer_scenario_id_over_scenario(self):
         """Test that _pull_scenario uses scenario_id even when scenario is provided."""
         # Pre-condition
         client = Mock()
+        project = "test_project"
         scenario = {"key": "value"}
         scenario_id = "test-scenario-id"
         yaml_content = "scenario: from_api"
         client.get_scenario.return_value = {"yaml_content": yaml_content}
 
         # In-test
-        result = humalab._pull_scenario(client=client, scenario=scenario, scenario_id=scenario_id)
+        result = humalab._pull_scenario(client=client, project=project, scenario=scenario, scenario_id=scenario_id)
 
         # Post-condition
         self.assertEqual(result, yaml_content)
-        client.get_scenario.assert_called_once_with(uuid=scenario_id)
+        client.get_scenario.assert_called_once_with(project_name=project, uuid=scenario_id, version=None)
 
     # Tests for init context manager
 
@@ -92,6 +95,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": project}
+        mock_api_client.get_run.return_value = {"run_id": run_id, "name": name, "description": description, "tags": tags}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -137,6 +142,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -170,7 +177,18 @@ class HumalabTest(unittest.TestCase):
         mock_config.timeout = 30.0
         mock_config_class.return_value = mock_config
 
+        # Mock HTTP 404 error for get_run (run doesn't exist yet)
+        import requests
+        http_error = requests.HTTPError()
+        http_error.response = Mock()
+        http_error.response.status_code = 404
+
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.side_effect = http_error
+        # Mock create_run to return a valid UUID
+        generated_uuid = str(uuid.uuid4())
+        mock_api_client.create_run.return_value = {"run_id": generated_uuid, "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -206,6 +224,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -241,6 +261,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client.get_scenario.return_value = {"yaml_content": yaml_content}
         mock_api_client_class.return_value = mock_api_client
 
@@ -253,7 +275,7 @@ class HumalabTest(unittest.TestCase):
         # In-test
         with humalab.init(scenario_id=scenario_id) as run:
             # Post-condition
-            mock_api_client.get_scenario.assert_called_once_with(uuid=scenario_id)
+            mock_api_client.get_scenario.assert_called_once_with(project_name='default', uuid=scenario_id, version=None)
             mock_scenario_inst.init.assert_called_once()
             call_kwargs = mock_scenario_inst.init.call_args.kwargs
             self.assertEqual(call_kwargs['scenario'], yaml_content)
@@ -274,6 +296,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -304,6 +328,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -338,6 +364,8 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
+        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
         mock_scenario_inst = Mock()
@@ -369,33 +397,33 @@ class HumalabTest(unittest.TestCase):
         humalab.finish()
 
         # Post-condition
-        mock_run.finish.assert_called_once_with(status=EpisodeStatus.PASS, quiet=None)
+        mock_run.finish.assert_called_once_with(status=RunStatus.FINISHED, err_msg=None)
 
     def test_finish_should_call_finish_on_current_run_with_custom_status(self):
         """Test that finish() calls finish on the current run with custom status."""
         # Pre-condition
         mock_run = Mock()
         humalab._cur_run = mock_run
-        status = EpisodeStatus.FAILED
+        status = RunStatus.ERRORED
 
         # In-test
         humalab.finish(status=status)
 
         # Post-condition
-        mock_run.finish.assert_called_once_with(status=status, quiet=None)
+        mock_run.finish.assert_called_once_with(status=status, err_msg=None)
 
-    def test_finish_should_call_finish_on_current_run_with_quiet_parameter(self):
-        """Test that finish() calls finish on the current run with quiet parameter."""
+    def test_finish_should_call_finish_on_current_run_with_err_msg_parameter(self):
+        """Test that finish() calls finish on the current run with err_msg parameter."""
         # Pre-condition
         mock_run = Mock()
         humalab._cur_run = mock_run
-        quiet = True
+        err_msg = "Test error message"
 
         # In-test
-        humalab.finish(quiet=quiet)
+        humalab.finish(err_msg=err_msg)
 
         # Post-condition
-        mock_run.finish.assert_called_once_with(status=EpisodeStatus.PASS, quiet=quiet)
+        mock_run.finish.assert_called_once_with(status=RunStatus.FINISHED, err_msg=err_msg)
 
     def test_finish_should_do_nothing_when_no_current_run(self):
         """Test that finish() does nothing when _cur_run is None."""

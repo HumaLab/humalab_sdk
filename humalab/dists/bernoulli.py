@@ -31,8 +31,9 @@ class Bernoulli(Distribution):
             return True
         if not isinstance(arg1, (int, float)):
             if isinstance(arg1, (list, np.ndarray)):
-                if len(arg1) > dimensions:
+                if len(arg1) != dimensions:
                     return False
+
         return True
 
     def _sample(self) -> int | float | np.ndarray:

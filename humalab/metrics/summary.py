@@ -1,15 +1,10 @@
 
-from humalab.metrics.metric import MetricGranularity, Metrics, MetricType
-from humalab.constants import EpisodeStatus
+from humalab.metrics.metric import Metrics
 
 
 class Summary(Metrics):
     def __init__(self, 
-                 name: str, 
                  summary: str,
-                 episode_id: str,
-                 run_id: str,
-                 granularity: MetricGranularity = MetricGranularity.RUN,
                  ) -> None:
         """
         A summary metric that captures a single value per episode or run.
@@ -22,12 +17,14 @@ class Summary(Metrics):
                 from being generated.
             granularity (MetricGranularity): The granularity of the metric.
         """
-        if granularity == MetricGranularity.RUN:
-            raise ValueError("Summary metrics cannot have RUN granularity.")
         if summary not in {"min", "max", "mean", "last", "first", "none"}:
             raise ValueError(f"Unsupported summary type: {summary}. Supported types are 'min', 'max', 'mean', 'last', 'first', and 'none'.")
-        super().__init__(name, MetricType.SUMMARY, episode_id=episode_id, run_id=run_id, granularity=granularity)
-        self.summary = summary
+        super().__init__()
+        self._summary = summary
+    
+    @property
+    def summary(self) -> str:
+        return self._summary
 
     def _submit(self) -> None:
         if not self._values:
