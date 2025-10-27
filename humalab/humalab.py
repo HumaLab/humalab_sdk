@@ -4,6 +4,7 @@ import traceback
 
 from omegaconf import OmegaConf
 
+from humalab.constants import DEFAULT_PROJECT
 from humalab.run import Run
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient, RunStatus, EpisodeStatus
@@ -71,7 +72,7 @@ def init(project: str | None = None,
     global _cur_run
     run = None
     try:
-        project = project or "default"
+        project = project or DEFAULT_PROJECT
         name = name or ""
         description = description or ""
         id = id or str(uuid.uuid4())

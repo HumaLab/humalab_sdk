@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock, Mock
 import uuid
 
+from humalab.constants import DEFAULT_PROJECT
 from humalab import humalab
 from humalab.run import Run
 from humalab.scenarios.scenario import Scenario
@@ -142,7 +143,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
@@ -156,7 +157,7 @@ class HumalabTest(unittest.TestCase):
         with humalab.init() as run:
             # Post-condition
             call_kwargs = mock_run_class.call_args.kwargs
-            self.assertEqual(call_kwargs['project'], "default")
+            self.assertEqual(call_kwargs['project'], DEFAULT_PROJECT)
             self.assertEqual(call_kwargs['name'], "")
             self.assertEqual(call_kwargs['description'], "")
             self.assertIsNotNone(call_kwargs['id'])  # UUID generated
@@ -184,7 +185,7 @@ class HumalabTest(unittest.TestCase):
         http_error.response.status_code = 404
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.side_effect = http_error
         # Mock create_run to return a valid UUID
         generated_uuid = str(uuid.uuid4())
@@ -224,7 +225,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
@@ -261,7 +262,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client.get_scenario.return_value = {"yaml_content": yaml_content}
         mock_api_client_class.return_value = mock_api_client
@@ -296,7 +297,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
@@ -328,7 +329,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 
@@ -364,7 +365,7 @@ class HumalabTest(unittest.TestCase):
         mock_config_class.return_value = mock_config
 
         mock_api_client = Mock()
-        mock_api_client.create_project.return_value = {"name": "default"}
+        mock_api_client.create_project.return_value = {"name": DEFAULT_PROJECT}
         mock_api_client.get_run.return_value = {"run_id": "", "name": "", "description": "", "tags": None}
         mock_api_client_class.return_value = mock_api_client
 

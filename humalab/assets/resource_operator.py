@@ -1,3 +1,4 @@
+from humalab.constants import DEFAULT_PROJECT
 from humalab.assets.files.resource_file import ResourceFile, ResourceType
 from humalab.humalab_config import HumalabConfig
 from humalab.humalab_api_client import HumaLabApiClient
@@ -18,7 +19,7 @@ def _create_asset_dir(humalab_config: HumalabConfig, name: str, version: int) ->
 
 def download(name: str, 
              version: int | None=None,
-             project: str = "default",
+             project: str = DEFAULT_PROJECT,
              
              host: str | None = None,
              api_key: str | None = None,
@@ -55,7 +56,7 @@ def download(name: str,
                         description=resource.get("description"),
                         created_at=resource.get("created_at"))
 
-def list_resources(project: str = "default",
+def list_resources(project: str = DEFAULT_PROJECT,
                    resource_types: Optional[list[str | ResourceType]] = None,
                    limit: int = 20,
                    offset: int = 0,

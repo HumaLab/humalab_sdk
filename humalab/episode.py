@@ -1,10 +1,9 @@
-
+from humalab.constants import RESERVED_NAMES
 from humalab.humalab_api_client import HumaLabApiClient, EpisodeStatus
 from humalab.metrics.metric import Metrics
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from typing import Any
 import traceback
-
 
 
 class Episode:
@@ -67,10 +66,14 @@ class Episode:
         raise KeyError(f"'Scenario' object has no key '{key}'")
 
     def add_metric(self, name: str, metric: Metrics) -> None:
+        if name in self._logs:
+            raise ValueError(f"{name} is a reserved name and is not allowed.")
         self._logs[name] = metric
         
     def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
         for key, value in data.items():
+            if key in RESERVED_NAMES:
+                raise ValueError(f"{key} is a reserved name and is not allowed.")
             if key not in self._logs:
                 self._logs[key] = key
             else:

@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import Enum
 
+from humalab.constants import DEFAULT_PROJECT
+
 class ResourceType(Enum):
     URDF = "urdf"
     MJCF = "mjcf"
@@ -18,7 +20,7 @@ class ResourceFile:
                  version: int, 
                  filename: str,
                  resource_type: str | ResourceType,
-                 project: str = "default",
+                 project: str = DEFAULT_PROJECT,
                  description: str | None = None,
                  created_at: datetime | None = None):
         self._project = project
