@@ -1,6 +1,8 @@
 from typing import Any
+from threading import RLock
+
 import numpy as np
-from omegaconf import OmegaConf, ListConfig, AnyNode, DictConfig
+from omegaconf import OmegaConf, DictConfig, ListConfig
 import yaml
 from humalab.dists.bernoulli import Bernoulli
 from humalab.dists.categorical import Categorical
@@ -10,9 +12,6 @@ from humalab.dists.log_uniform import LogUniform
 from humalab.dists.gaussian import Gaussian
 from humalab.dists.truncated_gaussian import TruncatedGaussian
 from functools import partial
-from humalab.constants import EpisodeStatus
-from humalab.metrics.dist_metric import DistributionMetric
-from humalab.metrics.metric import MetricGranularity
 import copy
 import uuid
 
@@ -54,22 +53,23 @@ DISTRIBUTION_MAP = {
     "truncated_gaussian_3d": TruncatedGaussian,
 
     # 4D distributions
-    "uniform_4d": Uniform,
-    "bernoulli_4d": Bernoulli,
-    "categorical_4d": Categorical,
-    "discrete_4d": Discrete,
-    "log_uniform_4d": LogUniform,
-    "gaussian_4d": Gaussian,
-    "truncated_gaussian_4d": TruncatedGaussian,
-
+    # "uniform_4d": Uniform,
+    # "bernoulli_4d": Bernoulli,
+    # "categorical_4d": Categorical,
+    # "discrete_4d": Discrete,
+    # "log_uniform_4d": LogUniform,
+    # "gaussian_4d": Gaussian,
+    # "truncated_gaussian_4d": TruncatedGaussian,
+    
     # nD distributions
-    "uniform_nd": Uniform,
-    "bernoulli_nd": Bernoulli,
-    "categorical_nd": Categorical,
-    "discrete_nd": Discrete,
-    "log_uniform_nd": LogUniform,
-    "gaussian_nd": Gaussian,
-    "truncated_gaussian_nd": TruncatedGaussian,
+    # "uniform_nd": Uniform,
+    # "bernoulli_nd": Bernoulli,
+    # "categorical_nd": Categorical,
+    # "discrete_nd": Discrete,
+    # "log_uniform_nd": LogUniform,
+    # "gaussian_nd": Gaussian,
+    # "truncated_gaussian_nd": TruncatedGaussian,
+    
 }
 
 DISTRIBUTION_DIMENSION_MAP = {
@@ -110,22 +110,22 @@ DISTRIBUTION_DIMENSION_MAP = {
     "truncated_gaussian_3d": 3,
 
     # 4D distributions
-    "uniform_4d": 4,
-    "bernoulli_4d": 4,
-    "categorical_4d": 4,
-    "discrete_4d": 4,
-    "log_uniform_4d": 4,
-    "gaussian_4d": 4,
-    "truncated_gaussian_4d": 4,
+    # "uniform_4d": 4,
+    # "bernoulli_4d": 4,
+    # "categorical_4d": 4,
+    # "discrete_4d": 4,
+    # "log_uniform_4d": 4,
+    # "gaussian_4d": 4,
+    # "truncated_gaussian_4d": 4,
 
     # nD distributions
-    "uniform_nd": -1,
-    "bernoulli_nd": -1,
-    "categorical_nd": -1,
-    "discrete_nd": -1,
-    "log_uniform_nd": -1,
-    "gaussian_nd": -1,
-    "truncated_gaussian_nd": -1,
+    # "uniform_nd": -1,
+    # "bernoulli_nd": -1,
+    # "categorical_nd": -1,
+    # "discrete_nd": -1,
+    # "log_uniform_nd": -1,
+    # "gaussian_nd": -1,
+    # "truncated_gaussian_nd": -1,
 }
 
 DISTRIBUTION_PARAM_NUM_MAP = {
@@ -166,22 +166,22 @@ DISTRIBUTION_PARAM_NUM_MAP = {
     "truncated_gaussian_3d": 4,
 
     # 4D distributions
-    "uniform_4d": 2,
-    "bernoulli_4d": 1,
-    "categorical_4d": 2,
-    "discrete_4d": 3,
-    "log_uniform_4d": 2,
-    "gaussian_4d": 2,
-    "truncated_gaussian_4d": 4,
+    # "uniform_4d": 2,
+    # "bernoulli_4d": 1,
+    # "categorical_4d": 2,
+    # "discrete_4d": 3,
+    # "log_uniform_4d": 2,
+    # "gaussian_4d": 2,
+    # "truncated_gaussian_4d": 4,
 
     # nD distributions
-    "uniform_nd": 3,
-    "bernoulli_nd": 2,
-    "categorical_nd": 3,
-    "discrete_nd": 4,
-    "log_uniform_nd": 3,
-    "gaussian_nd": 3,
-    "truncated_gaussian_nd": 5,
+    # "uniform_nd": 3,
+    # "bernoulli_nd": 2,
+    # "categorical_nd": 3,
+    # "discrete_nd": 4,
+    # "log_uniform_nd": 3,
+    # "gaussian_nd": 3,
+    # "truncated_gaussian_nd": 5,
 }
 
 class Scenario:
@@ -192,9 +192,10 @@ class Scenario:
         self._cur_scenario = OmegaConf.create()
         self._scenario_id = None
 
+        self._episode_vals = {}
+        self._lock = RLock()
+
     def init(self,
-             run_id: str,
-             episode_id: str,
              scenario: str | list | dict | None = None, 
              seed: int | None=None, 
              scenario_id: str | None=None,
@@ -204,24 +205,30 @@ class Scenario:
         Initialize the scenario with the given parameters.
         
         Args:
-            run_id: The ID of the current run.
             episode_id: The ID of the current episode.
             scenario: The scenario configuration (YAML string, list, or dict).
             seed: Optional seed for random number generation.
             scenario_id: Optional scenario ID. If None, a new UUID is generated.
             # num_env: Optional number of parallel environments.
         """
-        self._run_id = run_id
-        self._episode_id = episode_id
-        self._metrics = {}
-
         self._num_env = None # num_env
+
+        # Parse scenario id
+        scenario_version = 1
+        if scenario_id is not None:
+            scenario_arr = scenario_id.split(":")
+            if len(scenario_arr) < 1:
+                raise ValueError("Invalid scenario_id format. Expected 'scenario_id' or 'scenario_name:version'.")
+            scenario_id = scenario_arr[0]
+            scenario_version = int(scenario_arr[1]) if len(scenario_arr) > 1 else None
         self._scenario_id = scenario_id or str(uuid.uuid4())
+        self._scenario_version = scenario_version
+
         self._generator = np.random.default_rng(seed)
         self._configure()
         scenario = scenario or {}
+
         self._scenario_template = OmegaConf.create(scenario)
-        self.reset(episode_id=episode_id)
     
     def _validate_distribution_params(self, dist_name: str, *args: tuple) -> None:
         dimensions = DISTRIBUTION_DIMENSION_MAP[dist_name]
@@ -291,13 +298,6 @@ class Scenario:
             root_yaml = yaml.safe_load(OmegaConf.to_yaml(_root_))
             key_path = self._get_node_path(root_yaml, str(_node_))
             
-            if key_path not in self._metrics:
-                self._metrics[key_path] = DistributionMetric(name=key_path,
-                                                             distribution_type=dist_name,
-                                                             run_id=self._run_id,
-                                                             episode_id=self._episode_id,
-                                                             granularity=MetricGranularity.EPISODE)
-
             shape = None 
             
             if DISTRIBUTION_DIMENSION_MAP[dist_name] == -1:
@@ -315,7 +315,8 @@ class Scenario:
 
             if isinstance(ret_val, list):
                 ret_val = ListConfig(ret_val)
-            self._metrics[key_path].log(ret_val)
+            
+            self._episode_vals[key_path] = ret_val
             return ret_val
 
         for dist_name in DISTRIBUTION_MAP.keys():
@@ -325,33 +326,18 @@ class Scenario:
         self.dist_cache.clear()
         OmegaConf.clear_resolvers()
     
-    def __getattr__(self, name: Any) -> Any:
-        if name in self._cur_scenario:
-            return self._cur_scenario[name]
-        raise AttributeError(f"'Scenario' object has no attribute '{name}'")
+    def resolve(self) -> tuple[DictConfig | ListConfig, dict]:
+        """Resolve the scenario configuration, sampling all distributions.
 
-    def __getitem__(self, key: Any) -> Any:
-        if key in self._cur_scenario:
-            return self._cur_scenario[key]
-        raise KeyError(f"'Scenario' object has no key '{key}'")
-
-    def reset(self,
-              episode_id: str | None = None) -> None:
-        """Reset the scenario for a new episode.
-        
-        Args:
-            episode_id: Optional new episode ID. If None, keeps the current episode ID.
+        Returns:
+            tuple[DictConfig | ListConfig, dict]: The resolved scenario and episode values.
         """
-        for metric in self._metrics.values():
-            metric.reset(episode_id=episode_id)
-        self._cur_scenario = copy.deepcopy(self._scenario_template)
-        OmegaConf.resolve(self._cur_scenario)
-    
-    def finish(self) -> None:
-        """Finish the scenario and submit final metrics.
-        """
-        for metric in self._metrics.values():
-            metric.finish()
+        with self._lock:
+            cur_scenario = copy.deepcopy(self._scenario_template)
+            self._episode_vals = {}
+            OmegaConf.resolve(cur_scenario)
+            episode_vals = copy.deepcopy(self._episode_vals)
+            return cur_scenario, episode_vals
 
     @property
     def template(self) -> Any:
@@ -363,19 +349,10 @@ class Scenario:
         return self._scenario_template
     
     @property
-    def cur_scenario(self) -> Any:
-        """The current scenario configuration.
-
-        Returns:
-            Any: The current scenario as an OmegaConf object.
-        """
-        return self._cur_scenario
-    
-    @property
     def yaml(self) -> str:
         """The current scenario configuration as a YAML string.
 
         Returns:
             str: The current scenario as a YAML string.
         """
-        return OmegaConf.to_yaml(self._cur_scenario)
+        return OmegaConf.to_yaml(self._scenario_template)

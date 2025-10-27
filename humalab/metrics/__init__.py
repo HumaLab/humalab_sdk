@@ -1,11 +1,9 @@
-from .metric import MetricGranularity, MetricType, Metrics
-from .dist_metric import DistributionMetric
+from .metric import Metrics
+from .episode_stats import EpisodeStats
 from .summary import Summary
 
 __all__ = [
-    "MetricGranularity",
-    "MetricType",
     "Metrics",
-    "DistributionMetric",
+    "EpisodeStats",
     "Summary",
 ]

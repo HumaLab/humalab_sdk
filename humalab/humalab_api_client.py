@@ -1,9 +1,28 @@
 """HTTP client for accessing HumaLab service APIs with API key authentication."""
 
+from enum import Enum
 import os
 import requests
 from typing import Dict, Any, Optional, List
 from urllib.parse import urljoin
+from humalab.humalab_config import HumalabConfig
+
+
+class RunStatus(Enum):
+    """Status of runs"""
+    RUNNING = "running"
+    CANCELED = "canceled"
+    ERRORED = "errored"
+    FINISHED = "finished"
+
+
+class EpisodeStatus(Enum):
+    """Status of validation episodes"""
+    RUNNING = "running"
+    CANCELED = "canceled"
+    ERRORED = "errored"
+    SUCCESS = "success"
+    FAILED = "failed"
 
 
 class HumaLabApiClient:
@@ -23,9 +42,10 @@ class HumaLabApiClient:
             api_key: API key for authentication (defaults to HUMALAB_API_KEY env var)
             timeout: Request timeout in seconds
         """
-        self.base_url = base_url or os.getenv("HUMALAB_SERVICE_URL", "http://localhost:8000")
-        self.api_key = api_key or os.getenv("HUMALAB_API_KEY")
-        self.timeout = timeout or 30.0  # Default timeout of 30 seconds
+        humalab_config = HumalabConfig()
+        self.base_url = base_url or os.getenv("HUMALAB_SERVICE_URL", "http://localhost:8000") or humalab_config.base_url
+        self.api_key = api_key or os.getenv("HUMALAB_API_KEY") or humalab_config.api_key
+        self.timeout = timeout or humalab_config.timeout or 30.0  # Default timeout of 30 seconds
         
         # Ensure base_url ends without trailing slash
         self.base_url = self.base_url.rstrip('/')
@@ -134,7 +154,7 @@ class HumaLabApiClient:
         resource_types: Optional[str] = None,
         limit: int = 20,
         offset: int = 0,
-        latest_only: bool = False
+        latest_only: bool = True
     ) -> Dict[str, Any]:
         """
         Get list of all resources.
@@ -258,8 +278,8 @@ class HumaLabApiClient:
     def get_scenarios(
         self,
         project_name: str,
-        skip: int = 0,
-        limit: int = 10,
+        limit: int = 20,
+        offset: int = 0,     
         include_inactive: bool = False,
         search: Optional[str] = None,
         status_filter: Optional[str] = None
@@ -269,8 +289,8 @@ class HumaLabApiClient:
 
         Args:
             project_name: Project name (required)
-            skip: Number of scenarios to skip for pagination
             limit: Maximum number of scenarios to return (1-100)
+            offset: Number of scenarios to skip
             include_inactive: Include inactive scenarios in results
             search: Search term to filter by name, description, or UUID
             status_filter: Filter by specific status
@@ -280,7 +300,7 @@ class HumaLabApiClient:
         """
         params = {
             "project_name": project_name,
-            "skip": skip,
+            "skip": offset,
             "limit": limit,
             "include_inactive": include_inactive
         }
@@ -441,7 +461,8 @@ class HumaLabApiClient:
             "name": name,
             "project_name": project_name,
             "arguments": arguments or [],
-            "tags": tags or []
+            "tags": tags or [],
+            "status": RunStatus.RUNNING.value
         }
         if description:
             data["description"] = description
@@ -452,7 +473,7 @@ class HumaLabApiClient:
     def get_runs(
         self,
         project_name: Optional[str],
-        status: Optional[str] = None,
+        status: Optional[RunStatus] = None,
         tags: Optional[List[str]] = None,
         limit: int = 20,
         offset: int = 0
@@ -475,7 +496,7 @@ class HumaLabApiClient:
             raise ValueError("project_name is required to get runs.")
         params["project_name"] = project_name
         if status:
-            params["status"] = status
+            params["status"] = status.value
         if tags:
             params["tags"] = ",".join(tags)
             
@@ -500,7 +521,8 @@ class HumaLabApiClient:
         run_id: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        status: Optional[str] = None,
+        status: Optional[RunStatus] = None,
+        err_msg: Optional[str] = None,
         arguments: Optional[List[Dict[str, str]]] = None,
         tags: Optional[List[str]] = None
     ) -> Dict[str, Any]:
@@ -512,6 +534,7 @@ class HumaLabApiClient:
             name: Optional new name
             description: Optional new description
             status: Optional new status
+            err_msg: Optional error message
             arguments: Optional new arguments
             tags: Optional new tags
 
@@ -524,7 +547,9 @@ class HumaLabApiClient:
         if description is not None:
             data["description"] = description
         if status is not None:
-            data["status"] = status
+            data["status"] = status.value
+        if err_msg is not None:
+            data["err_msg"] = err_msg
         if arguments is not None:
             data["arguments"] = arguments
         if tags is not None:
@@ -537,7 +562,7 @@ class HumaLabApiClient:
         self, 
         run_id: str, 
         episode_name: str,
-        status: Optional[str] = None
+        status: Optional[EpisodeStatus] = None
     ) -> Dict[str, Any]:
         """
         Create a new episode.
@@ -555,7 +580,7 @@ class HumaLabApiClient:
             "run_id": run_id
         }
         if status:
-            data["status"] = status
+            data["status"] = status.value
             
         response = self.post("/episodes", data=data)
         return response.json()
@@ -563,7 +588,7 @@ class HumaLabApiClient:
     def get_episodes(
         self,
         run_id: Optional[str] = None,
-        status: Optional[str] = None,
+        status: Optional[EpisodeStatus] = None,
         limit: int = 20,
         offset: int = 0
     ) -> Dict[str, Any]:
@@ -583,7 +608,7 @@ class HumaLabApiClient:
         if run_id:
             params["run_id"] = run_id
         if status:
-            params["status"] = status
+            params["status"] = status.value
             
         response = self.get("/episodes", params=params)
         return response.json()
@@ -606,7 +631,8 @@ class HumaLabApiClient:
         self,
         run_id: str,
         episode_name: str,
-        status: Optional[str] = None
+        status: Optional[EpisodeStatus] = None,
+        err_msg: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Update an episode.
@@ -615,14 +641,16 @@ class HumaLabApiClient:
             run_id: Run ID
             episode_name: Episode name
             status: Optional new status
-            
+            err_msg: Optional error message
+
         Returns:
             Updated episode data
         """
         data = {}
         if status is not None:
-            data["status"] = status
-            
+            data["status"] = status.value
+        if err_msg is not None:
+            data["err_msg"] = err_msg
         response = self.put(f"/episodes/{run_id}/{episode_name}", data=data)
         return response.json()
     

@@ -1,19 +1,26 @@
 import uuid
-from humalab.metrics.dist_metric import DistributionMetric
-from humalab.metrics.metric import MetricGranularity, MetricType, Metrics
-from humalab.constants import EpisodeStatus
+from contextlib import contextmanager
+import sys
+import traceback
 
-from humalab.metrics.summary import Summary
-from humalab.scenario import Scenario
+from humalab.humalab_api_client import HumaLabApiClient, RunStatus
+from humalab.metrics.metric import Metrics
+from humalab.episode import Episode
+
+from humalab.scenarios.scenario import Scenario
 
 class Run:
     def __init__(self,
-                 project: str,
                  scenario: Scenario,
+                 project: str = "default",
                  name: str | None = None,
                  description: str | None = None,
                  id: str | None = None,
                  tags: list[str] | None = None,
+
+                 base_url: str | None = None,
+                 api_key: str | None = None,
+                 timeout: float | None = None,
                  ) -> None:
         """
         Initialize a new Run instance.
@@ -31,13 +38,15 @@ class Run:
         self._name = name or ""
         self._description = description or ""
         self._tags = tags or []
-        self._finished = False
-
-        self._episode = str(uuid.uuid4())
 
         self._scenario = scenario
+        self._logs = {}
+        self._is_finished = False
 
-        self._metrics = {}
+        self._api_client = HumaLabApiClient(base_url=base_url,
+                                            api_key=api_key,
+                                            timeout=timeout)
+
     
     @property
     def project(self) -> str:
@@ -85,15 +94,6 @@ class Run:
         return self._tags
     
     @property
-    def episode(self) -> str:
-        """The episode ID for the run.
-
-        Returns:
-            str: The episode ID.
-        """
-        return self._episode
-    
-    @property
     def scenario(self) -> Scenario:
         """The scenario associated with the run.
 
@@ -101,102 +101,72 @@ class Run:
             Scenario: The scenario instance.
         """
         return self._scenario
-
-    def finish(self,
-               status: EpisodeStatus = EpisodeStatus.PASS,
-               quiet: bool | None = None) -> None:
-        """Finish the run and submit final metrics.
-
-        Args:
-            status (EpisodeStatus): The final status of the episode.
-            quiet (bool | None): Whether to suppress output.
-        """
-        self._finished = True
-        self._scenario.finish()
-        for metric in self._metrics.values():
-            metric.finish(status=status)
     
-    def log(self,
-            data: dict,
-            step: int | None = None,
-            commit: bool = True,
-            ) -> None:
-        """Log metrics for the run.
+    def __enter__(self):
+        return self
 
-        Args:
-            data (dict): A dictionary of metric names and their values.
-            step (int | None): The step number for the metrics.
-            commit (bool): Whether to commit the metrics immediately.
-        """
-        for key, value in data.items():
-            if key in self._metrics:
-                metric = self._metrics[key]
-                metric.log(value, step=step, commit=commit)
-            else:
-                self._metrics[key] = Metrics(key, 
-                                             metric_type=MetricType.DEFAULT,
-                                             run_id=self._id,
-                                             granularity=MetricGranularity.EPISODE,
-                                             episode_id=self._episode)
-                self._metrics[key].log(value, step=step, commit=commit)
+    def __exit__(self, exception_type, exception_value, exception_traceback):
+        if self._is_finished:
+            return
+        if exception_type is not None:
+            err_msg = "".join(traceback.format_exception(exception_type, exception_value, exception_traceback))
+            self.finish(status=RunStatus.ERRORED, err_msg=err_msg)
+        else:
+            self.finish()
 
-    def reset(self, status: EpisodeStatus = EpisodeStatus.PASS) -> None:
+    def create_episode(self, episode_id: str | None = None) -> Episode:
         """Reset the run for a new episode.
 
         Args:
             status (EpisodeStatus): The status of the current episode before reset.
         """
-        self._submit_episode_status(status=status, episode=self._episode)
-        self._episode = str(uuid.uuid4())
-        self._finished = False
-        self._scenario.reset(episode_id=self._episode)
-        for metric in self._metrics.values():
-            metric.reset(episode=self._episode)
-    
-    def _submit_episode_status(self, status: EpisodeStatus, episode: str) -> None:
-        # TODO: Implement submission of episode status
-        pass
+        episode = None
+        episode_id = episode_id or str(uuid.uuid4())
+        cur_scenario, episode_vals = self._scenario.resolve()
+        episode = Episode(run_id=self._id,
+                        episode_id=episode_id,
+                        scenario_conf=cur_scenario,
+                        episode_vals=episode_vals)
+        return episode
 
-    def define_metric(self, 
-                      name: str, 
-                      metric_type: MetricType = MetricType.DEFAULT,
-                      granularity: MetricGranularity = MetricGranularity.RUN,
-                      distribution_type: str | None = None,
-                      summary: str | None = None,
-                      replace: bool = False) -> None:
-        """Define a new metric for the run.
+    
+    def add_metric(self, name: str, metric: Metrics) -> None:
+        self._logs[name] = metric
         
-        Args:
-            name (str): The name of the metric.
-            metric_type (MetricType): The type of the metric.
-            granularity (MetricGranularity): The granularity of the metric.
-            distribution_type (str | None): The type of distribution if metric_type is DISTRIBUTION.
-            summary (str | None): Specify aggregate metrics added to summary.
-                Supported aggregations include "min", "max", "mean", "last",
-                "first", and "none". "none" prevents a summary
-                from being generated.
-            replace (bool): Whether to replace the metric if it already exists.
-        """
-        if name not in self._metrics or replace:
-            if metric_type == MetricType.DISTRIBUTION:
-                if distribution_type is None:
-                    raise ValueError("distribution_type must be specified for distribution metrics.")
-                self._metrics[name] = DistributionMetric(name=name, 
-                                                         distribution_type=distribution_type, 
-                                                         run_id=self._id,
-                                                         episode_id=self._episode,
-                                                         granularity=granularity)  
-            elif summary is not None:
-                self._metrics[name] = Summary(name=name, 
-                                              summary=summary, 
-                                              run_id=self._id,
-                                              episode_id=self._episode,
-                                              granularity=granularity)
+    def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
+        for key, value in data.items():
+            if key not in self._logs:
+                self._logs[key] = key
             else:
-                self._metrics[name] = Metrics(name=name, 
-                                              metric_type=metric_type, 
-                                              run_id=self._id,
-                                              episode_id=self._episode,
-                                              granularity=granularity)
-        else:
-            raise ValueError(f"Metric {name} already exists.")
+                cur_val = self._logs[key]
+                if isinstance(cur_val, Metrics):
+                    cur_x = x.get(key) if x is not None else None
+                    cur_val.log(value, x=cur_x, replace=replace)
+                else:
+                    if replace:
+                        self._logs[key] = value
+                    else:
+                        raise ValueError(f"Cannot log value for key '{key}' as there is already a value logged.")
+    
+    def finish(self,
+               status: RunStatus = RunStatus.FINISHED,
+               err_msg: str | None = None) -> None:
+        """Finish the run and submit final metrics.
+
+        Args:
+            status (RunStatus): The final status of the run.
+            err_msg (str | None): An optional error message.
+        """
+        if self._is_finished:
+            raise RuntimeError("Run has already been finished.")
+        self._is_finished = True
+        # TODO: submit final metrics
+        for key, value in self._logs.items():
+            if isinstance(value, Metrics):
+                value.submit()
+
+        self._api_client.update_run(
+            run_id=self._id,
+            status=status,
+            err_msg=err_msg
+        )
