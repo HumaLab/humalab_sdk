@@ -1,9 +1,9 @@
 from .metric import Metrics
-from .episode_stats import EpisodeStats
+from .scenario_stats import ScenarioStats
 from .summary import Summary
 
 __all__ = [
     "Metrics",
-    "EpisodeStats",
+    "ScenarioStats",
     "Summary",
 ]

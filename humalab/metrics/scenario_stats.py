@@ -2,8 +2,8 @@ from humalab.metrics.metric import Metrics
 from humalab.humalab_api_client import EpisodeStatus
 from typing import Any
 
-class EpisodeStats(Metrics):
-    """Metric to track episode statistics such as total reward, length, and success.
+class ScenarioStats(Metrics):
+    """Metric to track scenario statistics such as total reward, length, and success.
 
     Attributes:
         name (str): The name of the metric.
