@@ -1,5 +1,7 @@
 from humalab.constants import RESERVED_NAMES, ArtifactType
 from humalab.humalab_api_client import HumaLabApiClient, EpisodeStatus
+from humalab.metrics.code import Code
+from humalab.metrics.summary import Summary
 from humalab.metrics.metric import Metrics
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from typing import Any
@@ -51,6 +53,10 @@ class Episode:
     def episode_vals(self) -> dict:
         return self._episode_vals
     
+    @property
+    def is_finished(self) -> bool:
+        return self._is_finished
+    
     def __enter__(self):
         return self
 
@@ -77,13 +83,29 @@ class Episode:
         if name in self._logs:
             raise ValueError(f"{name} is a reserved name and is not allowed.")
         self._logs[name] = metric
-        
+    
+    def log_code(self, key: str, code_content: str) -> None:
+        """Log code content as an artifact.
+
+        Args:
+            key (str): The key for the code artifact.
+            code_content (str): The code content to log.
+        """
+        if key in RESERVED_NAMES:
+            raise ValueError(f"{key} is a reserved name and is not allowed.")
+        self._logs[key] = Code(
+            run_id=self._run_id,
+            key=key,
+            code_content=code_content,
+            episode_id=self._episode_id
+        )
+
     def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
         for key, value in data.items():
             if key in RESERVED_NAMES:
                 raise ValueError(f"{key} is a reserved name and is not allowed.")
             if key not in self._logs:
-                self._logs[key] = key
+                self._logs[key] = value
             else:
                 cur_val = self._logs[key]
                 if isinstance(cur_val, Metrics):
@@ -115,7 +137,7 @@ class Episode:
 
     def finish(self, status: EpisodeStatus, err_msg: str | None = None) -> None:
         if self._is_finished:
-            raise RuntimeError("Episode has already been finished.")
+            return
         self._is_finished = True
         self._episode_status = status
 
@@ -128,8 +150,33 @@ class Episode:
 
         # TODO: submit final metrics
         for key, value in self._logs.items():
-            if isinstance(value, Metrics):
-                value.finalize()
+            if isinstance(value, Summary):
+                metric_val = value.finalize()
+                pickled = pickle.dumps(metric_val["value"])
+                self._api_client.upload_python(
+                    artifact_key=key,
+                    run_id=self._id,
+                    episode_id=self._episode_id,
+                    pickled_bytes=pickled
+                )
+            elif isinstance(value, Metrics):
+                metric_val = value.finalize()
+                pickled = pickle.dumps(metric_val)
+                self._api_client.upload_metrics(
+                    artifact_key=key,
+                    run_id=self._id,
+                    episode_id=self._episode_id,
+                    pickled_bytes=pickled,
+                    graph_type=value.graph_type.value,
+                    metric_dim_type=value.metric_dim_type.value
+                )
+            elif isinstance(value, Code):
+                self._api_client.upload_code(
+                    artifact_key=value.key,
+                    run_id=value.run_id,
+                    episode_id=value.episode_id,
+                    code_content=value.code_content
+                )
             else:
                 if not is_standard_type(value):
                     raise ValueError(f"Value for key '{key}' is not a standard type.")

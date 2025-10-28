@@ -1,7 +1,19 @@
 from humalab.metrics.metric import Metrics
-from humalab.constants import ArtifactType, GraphType, ScenarioStatType
+from humalab.constants import ArtifactType, GraphType, MetricDimType
 from humalab.humalab_api_client import EpisodeStatus
 from typing import Any
+
+
+SCENARIO_STATS_NEED_FLATTEN = {
+    "uniform_1d",
+    "bernoulli_1d",
+    "categorical_1d",
+    "discrete_1d",
+    "log_uniform_1d",
+    "gaussian_1d",
+    "truncated_gaussian_1d"
+}
+
 
 class ScenarioStats(Metrics):
     """Metric to track scenario statistics such as total reward, length, and success.
@@ -12,14 +24,15 @@ class ScenarioStats(Metrics):
     def __init__(self, 
                  name: str,
                  distribution_type: str,
-                 scenario_stat_type: ScenarioStatType,
+                 metric_dim_type: MetricDimType,
                  graph_type: GraphType,
                  ) -> None:
-        super().__init__()
+        super().__init__(
+            metric_dim_type=metric_dim_type,
+            graph_type=graph_type
+        )
         self._name = name
         self._distribution_type = distribution_type
-        self._scenario_stat_type = scenario_stat_type
-        self._graph_type = graph_type
         self._artifact_type = ArtifactType.SCENARIO_STATS
         self._values = {}
         self._results = {}
@@ -33,24 +46,20 @@ class ScenarioStats(Metrics):
         return self._distribution_type
 
     @property
-    def scenario_stat_type(self) -> ScenarioStatType:
-        return self._scenario_stat_type
-    
-    @property
-    def graph_type(self) -> GraphType:
-        return self._graph_type
-    
-    @property
     def artifact_type(self) -> ArtifactType:
         return self._artifact_type
     
     def log(self, data: Any, x: Any = None, replace: bool = False) -> None:
         if x in self._values:
             if replace:
+                if self._distribution_type in SCENARIO_STATS_NEED_FLATTEN:
+                    data = data[0]
                 self._values[x] = data
             else:   
                 raise ValueError(f"Data for episode_id {x} already exists. Use replace=True to overwrite.")
         else:
+            if self._distribution_type in SCENARIO_STATS_NEED_FLATTEN:
+                data = data[0]
             self._values[x] = data
     
     def log_status(self, 

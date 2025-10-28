@@ -885,7 +885,7 @@ class HumaLabApiClient:
         run_id: str,
         pickled_bytes: bytes,
         graph_type: str,
-        scenario_stat_type: str
+        metric_dim_type: str
     ) -> Dict[str, Any]:
         """
         Upload scenario stats artifact (pickled Python dict data).
@@ -905,7 +905,7 @@ class HumaLabApiClient:
         data = {
             'artifact_key': artifact_key,
             'run_id': run_id,
-            'scenario_stat_type': scenario_stat_type,
+            'metric_dim_type': metric_dim_type,
             'graph_type': graph_type
         }
 
@@ -934,22 +934,24 @@ class HumaLabApiClient:
         response = self.get(endpoint)
         return response.content
 
-    def update_metrics(
+    def upload_metrics(
         self,
         run_id: str,
         artifact_key: str,
         pickled_bytes: bytes,
         graph_type: str,
+        metric_dim_type: str,
         episode_id: str | None = None,
     ) -> Dict[str, Any]:
         """
-        Update metrics artifact.
+        Upload metrics artifact.
 
         Args:
             run_id: Run ID
             artifact_key: Artifact key
             pickled_bytes: Pickled metrics data as bytes
             graph_type: Optional new graph type
+            metric_dim_type: Optional new metric dimension type
             episode_id: Optional new episode ID
 
         Returns:
@@ -958,7 +960,8 @@ class HumaLabApiClient:
         data = {
             "run_id": run_id,
             "artifact_key": artifact_key,
-            "graph_type": graph_type
+            'metric_dim_type': metric_dim_type,
+            'graph_type': graph_type
         }
         files = {'file': pickled_bytes}
         if episode_id:

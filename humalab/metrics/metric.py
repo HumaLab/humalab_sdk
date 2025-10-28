@@ -1,29 +1,27 @@
-from abc import abstractmethod
 from typing import Any
-from enum import Enum
-
-
-class MetricType(Enum):
-    """Metric types supported by Humalab."""
-    LINE = "line"
-    BAR = "bar"
-    SCATTER = "scatter"
-    # GAUGE = "gauge"
-    # COUNTER = "counter"
-    HISTOGRAM = "histogram"
-    GAUSSIAN = "gaussian"
-    HEATMAP = "heatmap"
-    THREE_D_MAP = "3d_map"
+from humalab.constants import MetricDimType, GraphType
 
 
 class Metrics:
-    def __init__(self) -> None:
+    def __init__(self,
+                 metric_dim_type: MetricDimType= MetricDimType.ONE_D,
+                 graph_type: GraphType=GraphType.LINE) -> None:
         """
         Base class for different types of metrics.
         """
         self._values = []
         self._x_values = []
         self._step = -1
+        self._metric_dim_type = metric_dim_type
+        self._graph_type = graph_type
+
+    @property
+    def metric_dim_type(self) -> MetricDimType:
+        return self._metric_dim_type
+    
+    @property
+    def graph_type(self) -> GraphType:
+        return self._graph_type
     
     def log(self, data: Any, x: Any = None, replace: bool = False) -> None:
         """Log a new data point for the metric. The behavior depends on the granularity.    
