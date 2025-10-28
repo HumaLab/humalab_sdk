@@ -26,7 +26,7 @@ class Summary(Metrics):
     def summary(self) -> str:
         return self._summary
 
-    def _submit(self) -> None:
+    def _finalize(self) -> None:
         if not self._values:
             return
         # For summary metrics, we only keep the latest value
@@ -48,4 +48,4 @@ class Summary(Metrics):
                     agg_value = sum(self._values) / len(self._values)
                 self._values = [agg_value]
 
-        super()._submit()
+        super()._finalize()

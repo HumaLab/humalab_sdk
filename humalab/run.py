@@ -1,7 +1,9 @@
 import uuid
 import traceback
+import pickle
+import base64
 
-from humalab.constants import DEFAULT_PROJECT, RESERVED_NAMES
+from humalab.constants import DEFAULT_PROJECT, RESERVED_NAMES, ArtifactType
 from humalab.humalab_api_client import HumaLabApiClient, RunStatus
 from humalab.metrics.metric import Metrics
 from humalab.episode import Episode
@@ -163,10 +165,23 @@ class Run:
         if self._is_finished:
             raise RuntimeError("Run has already been finished.")
         self._is_finished = True
+
+        self._api_client.upload_code(
+            artifact_key="scenario",
+            run_id=self._id,
+            code_content=self.scenario.yaml
+        )
         # TODO: submit final metrics
         for key, value in self._logs.items():
             if isinstance(value, Metrics):
-                value.submit()
+                value.finalize()
+            else:
+                pickled = pickle.dumps(value)
+                self._api_client.upload_python(
+                    artifact_key=key,
+                    run_id=self._id,
+                    pickled_bytes=pickled
+                )
 
         self._api_client.update_run(
             run_id=self._id,
