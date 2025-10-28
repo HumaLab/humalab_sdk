@@ -4,9 +4,11 @@ import pickle
 import base64
 
 from humalab.constants import DEFAULT_PROJECT, RESERVED_NAMES, ArtifactType
+from humalab.metrics.scenario_stats import ScenarioStats
 from humalab.humalab_api_client import HumaLabApiClient, RunStatus
 from humalab.metrics.metric import Metrics
 from humalab.episode import Episode
+from humalab.utils import is_standard_type
 
 from humalab.scenarios.scenario import Scenario
 
@@ -42,6 +44,7 @@ class Run:
 
         self._scenario = scenario
         self._logs = {}
+        self._episodes = {}
         self._is_finished = False
 
         self._api_client = HumaLabApiClient(base_url=base_url,
@@ -125,11 +128,24 @@ class Run:
         episode_id = episode_id or str(uuid.uuid4())
         cur_scenario, episode_vals = self._scenario.resolve()
         episode = Episode(run_id=self._id,
-                        episode_id=episode_id,
-                        scenario_conf=cur_scenario,
-                        episode_vals=episode_vals)
+                          episode_id=episode_id,
+                          scenario_conf=cur_scenario,
+                          episode_vals=episode_vals)
+        self._handle_scenario_stats(episode, episode_vals)
+        
         return episode
 
+    def _handle_scenario_stats(self, episode: Episode, episode_vals: dict) -> None:
+        for metric_name, value in episode_vals.items():
+            if metric_name not in self._logs:
+                stat = ScenarioStats(name=metric_name,
+                                    distribution_type=value["distribution"],
+                                    scenario_stat_type=value["scenario_stat_type"],
+                                    graph_type=value["graph_type"])
+                self._logs[metric_name] = stat
+            self._logs[metric_name].log(data=value["value"],
+                                        x=episode.episode_id)
+        self._episodes[episode.episode_id] = episode
     
     def add_metric(self, name: str, metric: Metrics) -> None:
         if name in self._logs:
@@ -171,11 +187,30 @@ class Run:
             run_id=self._id,
             code_content=self.scenario.yaml
         )
+        print("I AM HERERERERERE")
         # TODO: submit final metrics
         for key, value in self._logs.items():
-            if isinstance(value, Metrics):
-                value.finalize()
+            print("I AM HERERERERERE222222222222222222", type(value), value)
+            if isinstance(value, ScenarioStats):
+                print("I AM HERERERERERE233333333333333333")
+                for episode_id, episode in self._episodes.items():
+                    episode_status = episode.status
+                    value.log_status(
+                        episode_id=episode_id,
+                        episode_status=episode_status
+                    )
+                metric_val = value.finalize()
+                pickled = pickle.dumps(metric_val)
+                self._api_client.upload_scenario_stats_artifact(
+                    artifact_key=key,
+                    run_id=self._id,
+                    pickled_bytes=pickled,
+                    graph_type=value.graph_type.value,
+                    scenario_stat_type=value.scenario_stat_type.value
+                )
             else:
+                if not is_standard_type(value):
+                    raise ValueError(f"Value for key '{key}' is not a standard type.")
                 pickled = pickle.dumps(value)
                 self._api_client.upload_python(
                     artifact_key=key,
