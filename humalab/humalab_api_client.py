@@ -97,16 +97,35 @@ class HumaLabApiClient:
         if files:
             headers.pop("Content-Type", None)
         
-        response = requests.request(
-            method=method,
-            url=url,
-            json=data,
-            params=params,
-            files=files,
-            headers=headers,
-            timeout=self.timeout,
-            **kwargs
-        )
+        # Determine if we should send form data or JSON
+        # Form data endpoints: /artifacts/code, /artifacts/blob/upload, /artifacts/python
+        is_form_endpoint = any(form_path in endpoint for form_path in ['/artifacts/code', '/artifacts/blob', '/artifacts/python'])
+        
+        if is_form_endpoint or files:
+            # Send as form data
+            headers.pop("Content-Type", None)  # Let requests set multipart/form-data
+            response = requests.request(
+                method=method,
+                url=url,
+                data=data,
+                params=params,
+                files=files,
+                headers=headers,
+                timeout=self.timeout,
+                **kwargs
+            )
+        else:
+            # Send as JSON (default behavior)
+            response = requests.request(
+                method=method,
+                url=url,
+                json=data,
+                params=params,
+                files=files,
+                headers=headers,
+                timeout=self.timeout,
+                **kwargs
+            )
         
         # Raise an exception for HTTP error responses
         response.raise_for_status()
@@ -671,7 +690,7 @@ class HumaLabApiClient:
         artifact_type: str,
         file_content: bytes | None = None,
         file_path: str | None = None,
-        episode_id: Optional[str] = None,
+        episode_name: Optional[str] = None,
         filename: Optional[str] = None,
         content_type: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -684,7 +703,7 @@ class HumaLabApiClient:
             artifact_type: Type of artifact ('image' or 'video')
             file_content: File content as bytes
             file_path: Path to file to upload
-            episode_id: Optional episode ID (None for run-level artifacts)
+            episode_name: Optional episode ID (None for run-level artifacts)
             filename: Optional filename to use for the uploaded file
             content_type: Optional content type (e.g., 'image/png', 'video/mp4')
 
@@ -696,8 +715,8 @@ class HumaLabApiClient:
             'run_id': run_id,
             'artifact_type': artifact_type
         }
-        if episode_id:
-            form_data['episode_id'] = episode_id
+        if episode_name:
+            form_data['episode_name'] = episode_name
         if filename:
             form_data['filename'] = filename
         if content_type:
@@ -720,7 +739,7 @@ class HumaLabApiClient:
         run_id: str,
         metric_type: str,
         metric_data: Optional[List[Dict[str, Any]]] = None,
-        episode_id: Optional[str] = None
+        episode_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Upsert metrics artifact (create or append).
@@ -730,7 +749,7 @@ class HumaLabApiClient:
             run_id: Run ID
             metric_type: Type of metric display ('line', 'bar', 'scatter', 'gauge', 'counter')
             metric_data: List of metric data points with 'key', 'values', 'timestamp'
-            episode_id: Optional episode ID (None for run-level artifacts)
+            episode_name: Optional episode ID (None for run-level artifacts)
 
         Returns:
             Created/updated artifact data
@@ -740,8 +759,8 @@ class HumaLabApiClient:
             "run_id": run_id,
             "metric_type": metric_type
         }
-        if episode_id:
-            data["episode_id"] = episode_id
+        if episode_name:
+            data["episode_name"] = episode_name
         if metric_data:
             data["metric_data"] = metric_data
 
@@ -751,7 +770,7 @@ class HumaLabApiClient:
     def get_artifacts(
         self,
         run_id: Optional[str] = None,
-        episode_id: Optional[str] = None,
+        episode_name: Optional[str] = None,
         artifact_type: Optional[str] = None,
         limit: int = 20,
         offset: int = 0
@@ -761,7 +780,7 @@ class HumaLabApiClient:
 
         Args:
             run_id: Filter by run ID
-            episode_id: Filter by episode ID
+            episode_name: Filter by episode ID
             artifact_type: Filter by artifact type
             limit: Maximum number of artifacts to return (0 for no limit)
             offset: Number of artifacts to skip
@@ -772,8 +791,8 @@ class HumaLabApiClient:
         params = {"limit": limit, "offset": offset}
         if run_id:
             params["run_id"] = run_id
-        if episode_id:
-            params["episode_id"] = episode_id
+        if episode_name:
+            params["episode_name"] = episode_name
         if artifact_type:
             params["artifact_type"] = artifact_type
 
@@ -783,7 +802,7 @@ class HumaLabApiClient:
     def get_artifact(
         self,
         run_id: str,
-        episode_id: str,
+        episode_name: str,
         artifact_key: str
     ) -> Dict[str, Any]:
         """
@@ -791,13 +810,13 @@ class HumaLabApiClient:
 
         Args:
             run_id: Run ID
-            episode_id: Episode ID
+            episode_name: Episode ID
             artifact_key: Artifact key
 
         Returns:
             Artifact data
         """
-        response = self.get(f"/artifacts/{run_id}/{episode_id}/{artifact_key}")
+        response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}")
         return response.json()
 
     def upload_code(
@@ -805,7 +824,7 @@ class HumaLabApiClient:
         artifact_key: str,
         run_id: str,
         code_content: str,
-        episode_id: Optional[str] = None
+        episode_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Upload code artifact (YAML/string content).
@@ -814,7 +833,7 @@ class HumaLabApiClient:
             artifact_key: Artifact key identifier
             run_id: Run ID
             code_content: Code/text content to upload
-            episode_id: Optional episode ID (None for run-level artifacts)
+            episode_name: Optional episode ID (None for run-level artifacts)
 
         Returns:
             Created artifact data
@@ -824,8 +843,8 @@ class HumaLabApiClient:
             'run_id': run_id,
             'code_content': code_content
         }
-        if episode_id:
-            data['episode_id'] = episode_id
+        if episode_name:
+            data['episode_name'] = episode_name
 
         response = self.post("/artifacts/code", data=data)
         return response.json()
@@ -835,7 +854,7 @@ class HumaLabApiClient:
         artifact_key: str,
         run_id: str,
         pickled_bytes: bytes,
-        episode_id: Optional[str] = None
+        episode_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Upload pickled Python object as artifact.
@@ -844,7 +863,7 @@ class HumaLabApiClient:
             artifact_key: Artifact key identifier
             run_id: Run ID
             pickled_bytes: Pickled Python object as bytes
-            episode_id: Optional episode ID (None for run-level artifacts)
+            episode_name: Optional episode ID (None for run-level artifacts)
 
         Returns:
             Created artifact data
@@ -853,17 +872,17 @@ class HumaLabApiClient:
             'artifact_key': artifact_key,
             'run_id': run_id
         }
-        if episode_id:
-            data['episode_id'] = episode_id
+        if episode_name:
+            data['episode_name'] = episode_name
 
-        files = {'pickled_bytes': pickled_bytes}
+        files = {'file': pickled_bytes}
         response = self.post("/artifacts/python", files=files, data=data)
         return response.json()
 
     def download_artifact(
         self,
         run_id: str,
-        episode_id: str,
+        episode_name: str,
         artifact_key: str
     ) -> bytes:
         """
@@ -871,20 +890,20 @@ class HumaLabApiClient:
 
         Args:
             run_id: Run ID
-            episode_id: Episode ID
+            episode_name: Episode ID
             artifact_key: Artifact key
 
         Returns:
             Artifact file content as bytes
         """
-        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/download"
+        endpoint = f"/artifacts/{run_id}/{episode_name}/{artifact_key}/download"
         response = self.get(endpoint)
         return response.content
 
     def update_metrics(
         self,
         run_id: str,
-        episode_id: str,
+        episode_name: str,
         artifact_key: str,
         metric_type: Optional[str] = None,
         metric_data: Optional[List[Dict[str, Any]]] = None
@@ -894,7 +913,7 @@ class HumaLabApiClient:
 
         Args:
             run_id: Run ID
-            episode_id: Episode ID
+            episode_name: Episode ID
             artifact_key: Artifact key
             metric_type: Optional new metric type
             metric_data: Optional new metric data
@@ -908,14 +927,14 @@ class HumaLabApiClient:
         if metric_data:
             data["metric_data"] = metric_data
 
-        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics"
+        endpoint = f"/artifacts/{run_id}/{episode_name}/{artifact_key}/metrics"
         response = self.put(endpoint, data=data)
         return response.json()
 
     def append_metrics(
         self,
         run_id: str,
-        episode_id: str,
+        episode_name: str,
         artifact_key: str,
         metric_data: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
@@ -924,7 +943,7 @@ class HumaLabApiClient:
 
         Args:
             run_id: Run ID
-            episode_id: Episode ID
+            episode_name: Episode ID
             artifact_key: Artifact key
             metric_data: Metric data points to append
 
@@ -932,14 +951,14 @@ class HumaLabApiClient:
             Updated artifact data
         """
         data = {"metric_data": metric_data}
-        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics/append"
+        endpoint = f"/artifacts/{run_id}/{episode_name}/{artifact_key}/metrics/append"
         response = self.post(endpoint, data=data)
         return response.json()
 
     def clear_metrics(
         self,
         run_id: str,
-        episode_id: str,
+        episode_name: str,
         artifact_key: str
     ) -> Dict[str, Any]:
         """
@@ -947,12 +966,12 @@ class HumaLabApiClient:
 
         Args:
             run_id: Run ID
-            episode_id: Episode ID
+            episode_name: Episode ID
             artifact_key: Artifact key
 
         Returns:
             Updated artifact data with cleared metrics
         """
-        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics/clear"
+        endpoint = f"/artifacts/{run_id}/{episode_name}/{artifact_key}/metrics/clear"
         response = self.delete(endpoint)
         return response.json()
