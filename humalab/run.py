@@ -3,9 +3,12 @@ import traceback
 import pickle
 import base64
 
+from humalab.metrics.code import Code
+from humalab.metrics.summary import Summary
+
 from humalab.constants import DEFAULT_PROJECT, RESERVED_NAMES, ArtifactType
 from humalab.metrics.scenario_stats import ScenarioStats
-from humalab.humalab_api_client import HumaLabApiClient, RunStatus
+from humalab.humalab_api_client import EpisodeStatus, HumaLabApiClient, RunStatus
 from humalab.metrics.metric import Metrics
 from humalab.episode import Episode
 from humalab.utils import is_standard_type
@@ -140,7 +143,7 @@ class Run:
             if metric_name not in self._logs:
                 stat = ScenarioStats(name=metric_name,
                                     distribution_type=value["distribution"],
-                                    scenario_stat_type=value["scenario_stat_type"],
+                                    metric_dim_type=value["metric_dim_type"],
                                     graph_type=value["graph_type"])
                 self._logs[metric_name] = stat
             self._logs[metric_name].log(data=value["value"],
@@ -151,13 +154,29 @@ class Run:
         if name in self._logs:
             raise ValueError(f"{name} is a reserved name and is not allowed.")
         self._logs[name] = metric
+
+    def log_code(self, key: str, code_content: str) -> None:
+        """Log code content as an artifact.
+
+        Args:
+            key (str): The key for the code artifact.
+            code_content (str): The code content to log.
+        """
+        if key in RESERVED_NAMES:
+            raise ValueError(f"{key} is a reserved name and is not allowed.")
+        self._logs[key] = Code(
+            run_id=self._id,
+            key=key,
+            code_content=code_content,
+        )
+
         
     def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
         for key, value in data.items():
             if key in RESERVED_NAMES:
                 raise ValueError(f"{key} is a reserved name and is not allowed.")
             if key not in self._logs:
-                self._logs[key] = key
+                self._logs[key] = value
             else:
                 cur_val = self._logs[key]
                 if isinstance(cur_val, Metrics):
@@ -168,7 +187,19 @@ class Run:
                         self._logs[key] = value
                     else:
                         raise ValueError(f"Cannot log value for key '{key}' as there is already a value logged.")
-    
+    def _finish_episodes(self,
+                         status: RunStatus,
+                         err_msg: str | None = None) -> None:
+        for episode in self._episodes.values():
+            if not episode.is_finished:
+                if status == RunStatus.FINISHED:
+                    episode.finish(status=EpisodeStatus.CANCELED, err_msg=err_msg)
+                elif status == RunStatus.ERRORED:
+                    episode.finish(status=EpisodeStatus.ERRORED, err_msg=err_msg)
+                elif status == RunStatus.CANCELED:
+                    episode.finish(status=EpisodeStatus.CANCELED, err_msg=err_msg)
+        
+
     def finish(self,
                status: RunStatus = RunStatus.FINISHED,
                err_msg: str | None = None) -> None:
@@ -179,20 +210,18 @@ class Run:
             err_msg (str | None): An optional error message.
         """
         if self._is_finished:
-            raise RuntimeError("Run has already been finished.")
+            return
         self._is_finished = True
+        self._finish_episodes(status=status, err_msg=err_msg)
 
         self._api_client.upload_code(
             artifact_key="scenario",
             run_id=self._id,
             code_content=self.scenario.yaml
         )
-        print("I AM HERERERERERE")
         # TODO: submit final metrics
         for key, value in self._logs.items():
-            print("I AM HERERERERERE222222222222222222", type(value), value)
             if isinstance(value, ScenarioStats):
-                print("I AM HERERERERERE233333333333333333")
                 for episode_id, episode in self._episodes.items():
                     episode_status = episode.status
                     value.log_status(
@@ -206,7 +235,32 @@ class Run:
                     run_id=self._id,
                     pickled_bytes=pickled,
                     graph_type=value.graph_type.value,
-                    scenario_stat_type=value.scenario_stat_type.value
+                    metric_dim_type=value.metric_dim_type.value
+                )
+            elif isinstance(value, Summary):
+                metric_val = value.finalize()
+                pickled = pickle.dumps(metric_val["value"])
+                self._api_client.upload_python(
+                    artifact_key=key,
+                    run_id=self._id,
+                    pickled_bytes=pickled
+                )
+            elif isinstance(value, Metrics):
+                metric_val = value.finalize()
+                pickled = pickle.dumps(metric_val)
+                self._api_client.upload_metrics(
+                    artifact_key=key,
+                    run_id=self._id,
+                    pickled_bytes=pickled,
+                    graph_type=value.graph_type.value,
+                    metric_dim_type=value.metric_dim_type.value
+                )
+            elif isinstance(value, Code):
+                self._api_client.upload_code(
+                    artifact_key=value.key,
+                    run_id=value.run_id,
+                    episode_id=value.episode_id,
+                    code_content=value.code_content
                 )
             else:
                 if not is_standard_type(value):

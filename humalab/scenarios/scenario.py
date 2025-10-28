@@ -12,7 +12,7 @@ from humalab.dists.log_uniform import LogUniform
 from humalab.dists.gaussian import Gaussian
 from humalab.dists.truncated_gaussian import TruncatedGaussian
 from functools import partial
-from humalab.constants import GraphType, ScenarioStatType
+from humalab.constants import GraphType, MetricDimType
 import copy
 import uuid
 
@@ -133,34 +133,34 @@ DISTRIBUTION_PARAM_NUM_MAP = {
     "truncated_gaussian_3d": 4,
 }
 
-SCENARIO_STATS_TYPE_MAP = {
+SCENARIO_STATS_DIM_TYPE_MAP = {
     # 0D distributions
-    "uniform": ScenarioStatType.ONE_D,
-    "bernoulli": ScenarioStatType.ONE_D,
-    "categorical": ScenarioStatType.ONE_D,
-    "discrete": ScenarioStatType.ONE_D,
-    "log_uniform": ScenarioStatType.ONE_D,
-    "gaussian": ScenarioStatType.ONE_D,
-    "truncated_gaussian": ScenarioStatType.ONE_D,
+    "uniform": MetricDimType.ONE_D,
+    "bernoulli": MetricDimType.ONE_D,
+    "categorical": MetricDimType.ONE_D,
+    "discrete": MetricDimType.ONE_D,
+    "log_uniform": MetricDimType.ONE_D,
+    "gaussian": MetricDimType.ONE_D,
+    "truncated_gaussian": MetricDimType.ONE_D,
 
     # 1D distributions
-    "uniform_1d": ScenarioStatType.ONE_D,
-    "bernoulli_1d": ScenarioStatType.ONE_D,
-    "categorical_1d": ScenarioStatType.ONE_D,
-    "discrete_1d": ScenarioStatType.ONE_D,
-    "log_uniform_1d": ScenarioStatType.ONE_D,
-    "gaussian_1d": ScenarioStatType.ONE_D,
-    "truncated_gaussian_1d": ScenarioStatType.ONE_D,
+    "uniform_1d": MetricDimType.ONE_D,
+    "bernoulli_1d": MetricDimType.ONE_D,
+    "categorical_1d": MetricDimType.ONE_D,
+    "discrete_1d": MetricDimType.ONE_D,
+    "log_uniform_1d": MetricDimType.ONE_D,
+    "gaussian_1d": MetricDimType.ONE_D,
+    "truncated_gaussian_1d": MetricDimType.ONE_D,
 
     # 2D distributions
-    "uniform_2d": ScenarioStatType.TWO_D,
-    "gaussian_2d": ScenarioStatType.TWO_D,
-    "truncated_gaussian_2d": ScenarioStatType.TWO_D,
+    "uniform_2d": MetricDimType.TWO_D,
+    "gaussian_2d": MetricDimType.TWO_D,
+    "truncated_gaussian_2d": MetricDimType.TWO_D,
 
     # 3D distributions
-    "uniform_3d": ScenarioStatType.THREE_D,
-    "gaussian_3d": ScenarioStatType.THREE_D,
-    "truncated_gaussian_3d": ScenarioStatType.THREE_D,
+    "uniform_3d": MetricDimType.THREE_D,
+    "gaussian_3d": MetricDimType.THREE_D,
+    "truncated_gaussian_3d": MetricDimType.THREE_D,
 }
 
 DISTRIBUTION_GRAPH_TYPE = {
@@ -329,7 +329,7 @@ class Scenario:
                     "value": ret_val,
                     "distribution": dist_name,
                     "graph_type": DISTRIBUTION_GRAPH_TYPE[dist_name],
-                    "scenario_stat_type": SCENARIO_STATS_TYPE_MAP[dist_name],
+                    "metric_dim_type": SCENARIO_STATS_DIM_TYPE_MAP[dist_name],
                 }
             return ret_val
 

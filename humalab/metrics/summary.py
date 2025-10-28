@@ -1,5 +1,6 @@
 
 from humalab.metrics.metric import Metrics
+from humalab.constants import MetricDimType, GraphType
 
 
 class Summary(Metrics):
@@ -19,26 +20,31 @@ class Summary(Metrics):
         """
         if summary not in {"min", "max", "mean", "last", "first", "none"}:
             raise ValueError(f"Unsupported summary type: {summary}. Supported types are 'min', 'max', 'mean', 'last', 'first', and 'none'.")
-        super().__init__()
+        super().__init__(metric_dim_type= MetricDimType.ZERO_D, 
+                         graph_type=GraphType.NUMERIC)
         self._summary = summary
     
     @property
     def summary(self) -> str:
         return self._summary
 
-    def _finalize(self) -> None:
+    def _finalize(self) -> dict:
         if not self._values:
-            return
+            return {
+                "value": None,
+                "summary": self.summary
+            }
+        final_val = None
         # For summary metrics, we only keep the latest value
         if self.summary == "last":
-            self._values = [self._values[-1]]
+            final_val = self._values[-1]
         elif self.summary == "first":
-            self._values = [self._values[0]]
+            final_val = self._values[0]
         elif self.summary == "none":
-            self._values = []
+            final_val = None
         elif self.summary in {"min", "max", "mean"}:
             if not self._values:
-                self._values = []
+                final_val = None
             else:
                 if self.summary == "min":
                     agg_value = min(self._values)
@@ -46,6 +52,9 @@ class Summary(Metrics):
                     agg_value = max(self._values)
                 elif self.summary == "mean":
                     agg_value = sum(self._values) / len(self._values)
-                self._values = [agg_value]
+                final_val = agg_value
 
-        super()._finalize()
+        return {
+            "value": final_val,
+            "summary": self.summary
+        }

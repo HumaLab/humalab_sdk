@@ -23,6 +23,7 @@ class MetricType(Enum):
 
 class GraphType(Enum):
     """Types of graphs supported by Humalab."""
+    NUMERIC = "numeric"
     LINE = "line"
     BAR = "bar"
     SCATTER = "scatter"
@@ -32,8 +33,9 @@ class GraphType(Enum):
     THREE_D_MAP = "3d_map"
 
 
-class ScenarioStatType(Enum):
-    """Types of scenario stats based on data dimensions"""
+class MetricDimType(Enum):
+    """Types of metric dimensions"""
+    ZERO_D = "0d"
     ONE_D = "1d"
     TWO_D = "2d"
     THREE_D = "3d"
