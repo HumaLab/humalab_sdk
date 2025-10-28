@@ -1,8 +1,9 @@
-from humalab.constants import RESERVED_NAMES
+from humalab.constants import RESERVED_NAMES, ArtifactType
 from humalab.humalab_api_client import HumaLabApiClient, EpisodeStatus
 from humalab.metrics.metric import Metrics
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from typing import Any
+import pickle
 import traceback
 
 
@@ -110,10 +111,25 @@ class Episode:
             raise RuntimeError("Episode has already been finished.")
         self._is_finished = True
 
+        self._api_client.upload_code(
+            artifact_key="scenario",
+            run_id=self._id,
+            episode_id=self._episode_id,
+            code_content=self.yaml
+        )
+
         # TODO: submit final metrics
         for key, value in self._logs.items():
             if isinstance(value, Metrics):
-                value.submit()
+                value.finalize()
+            else:
+                pickled = pickle.dumps(value)
+                self._api_client.upload_python(
+                    artifact_key=key,
+                    run_id=self._id,
+                    episode_id=self._episode_id,
+                    pickled_bytes=pickled
+                )
         
         self._api_client.update_episode(
             run_id=self._run_id,
