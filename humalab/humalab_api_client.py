@@ -668,125 +668,291 @@ class HumaLabApiClient:
         self,
         artifact_key: str,
         run_id: str,
-        file_path: str,
         artifact_type: str,
-        episode_name: Optional[str] = None,
-        description: Optional[str] = None
+        file_content: bytes | None = None,
+        file_path: str | None = None,
+        episode_id: Optional[str] = None,
+        filename: Optional[str] = None,
+        content_type: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Upload a blob artifact (image/video).
-        
+
         Args:
             artifact_key: Artifact key identifier
             run_id: Run ID
-            file_path: Path to file to upload
             artifact_type: Type of artifact ('image' or 'video')
-            episode_name: Optional episode name (None for run-level artifacts)
-            description: Optional description
-            
+            file_content: File content as bytes
+            file_path: Path to file to upload
+            episode_id: Optional episode ID (None for run-level artifacts)
+            filename: Optional filename to use for the uploaded file
+            content_type: Optional content type (e.g., 'image/png', 'video/mp4')
+
         Returns:
             Created artifact data
         """
-        with open(file_path, 'rb') as f:
-            files = {'file': f}
-            form_data = {
-                'artifact_key': artifact_key,
-                'run_id': run_id,
-                'artifact_type': artifact_type
-            }
-            if episode_name:
-                form_data['episode_name'] = episode_name
-            if description:
-                form_data['description'] = description
-                
+        form_data = {
+            'artifact_key': artifact_key,
+            'run_id': run_id,
+            'artifact_type': artifact_type
+        }
+        if episode_id:
+            form_data['episode_id'] = episode_id
+        if filename:
+            form_data['filename'] = filename
+        if content_type:
+            form_data['content_type'] = content_type
+
+        if file_path:
+            with open(file_path, 'rb') as f:
+                files = {'file': f}
+                response = self.post("/artifacts/blob/upload", files=files, data=form_data)
+        elif file_content:
+            files = {'file': ('blob', file_content)}
             response = self.post("/artifacts/blob/upload", files=files, data=form_data)
-            return response.json()
+        else:
+            raise ValueError("Either file_path or file_content must be provided for blob upload.")
+        return response.json()
     
     def upsert_metrics(
         self,
         artifact_key: str,
         run_id: str,
         metric_type: str,
-        metric_data: List[Dict[str, Any]],
-        episode_name: Optional[str] = None,
-        description: Optional[str] = None
+        metric_data: Optional[List[Dict[str, Any]]] = None,
+        episode_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Upsert metrics artifact (create or append).
-        
+
         Args:
             artifact_key: Artifact key identifier
             run_id: Run ID
             metric_type: Type of metric display ('line', 'bar', 'scatter', 'gauge', 'counter')
             metric_data: List of metric data points with 'key', 'values', 'timestamp'
-            episode_name: Optional episode name (None for run-level artifacts)
-            description: Optional description
-            
+            episode_id: Optional episode ID (None for run-level artifacts)
+
         Returns:
             Created/updated artifact data
         """
         data = {
             "artifact_key": artifact_key,
             "run_id": run_id,
-            "metric_type": metric_type,
-            "metric_data": metric_data
+            "metric_type": metric_type
         }
-        if episode_name:
-            data["episode_name"] = episode_name
-        if description:
-            data["description"] = description
-            
+        if episode_id:
+            data["episode_id"] = episode_id
+        if metric_data:
+            data["metric_data"] = metric_data
+
         response = self.post("/artifacts/metrics", data=data)
         return response.json()
     
     def get_artifacts(
         self,
         run_id: Optional[str] = None,
-        episode_name: Optional[str] = None,
+        episode_id: Optional[str] = None,
         artifact_type: Optional[str] = None,
         limit: int = 20,
         offset: int = 0
     ) -> Dict[str, Any]:
         """
         Get list of artifacts.
-        
+
         Args:
             run_id: Filter by run ID
-            episode_name: Filter by episode name
+            episode_id: Filter by episode ID
             artifact_type: Filter by artifact type
-            limit: Maximum number of artifacts to return
+            limit: Maximum number of artifacts to return (0 for no limit)
             offset: Number of artifacts to skip
-            
+
         Returns:
             Artifact list with pagination info
         """
         params = {"limit": limit, "offset": offset}
         if run_id:
             params["run_id"] = run_id
-        if episode_name:
-            params["episode_name"] = episode_name
+        if episode_id:
+            params["episode_id"] = episode_id
         if artifact_type:
             params["artifact_type"] = artifact_type
-            
+
         response = self.get("/artifacts", params=params)
         return response.json()
     
     def get_artifact(
-        self, 
-        run_id: str, 
-        episode_name: str, 
+        self,
+        run_id: str,
+        episode_id: str,
         artifact_key: str
     ) -> Dict[str, Any]:
         """
         Get a specific artifact.
-        
+
         Args:
             run_id: Run ID
-            episode_name: Episode name
+            episode_id: Episode ID
             artifact_key: Artifact key
-            
+
         Returns:
             Artifact data
         """
-        response = self.get(f"/artifacts/{run_id}/{episode_name}/{artifact_key}")
+        response = self.get(f"/artifacts/{run_id}/{episode_id}/{artifact_key}")
+        return response.json()
+
+    def upload_code(
+        self,
+        artifact_key: str,
+        run_id: str,
+        code_content: str,
+        episode_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Upload code artifact (YAML/string content).
+
+        Args:
+            artifact_key: Artifact key identifier
+            run_id: Run ID
+            code_content: Code/text content to upload
+            episode_id: Optional episode ID (None for run-level artifacts)
+
+        Returns:
+            Created artifact data
+        """
+        data = {
+            'artifact_key': artifact_key,
+            'run_id': run_id,
+            'code_content': code_content
+        }
+        if episode_id:
+            data['episode_id'] = episode_id
+
+        response = self.post("/artifacts/code", data=data)
+        return response.json()
+
+    def upload_python(
+        self,
+        artifact_key: str,
+        run_id: str,
+        pickled_bytes: bytes,
+        episode_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Upload pickled Python object as artifact.
+
+        Args:
+            artifact_key: Artifact key identifier
+            run_id: Run ID
+            pickled_bytes: Pickled Python object as bytes
+            episode_id: Optional episode ID (None for run-level artifacts)
+
+        Returns:
+            Created artifact data
+        """
+        data = {
+            'artifact_key': artifact_key,
+            'run_id': run_id
+        }
+        if episode_id:
+            data['episode_id'] = episode_id
+
+        files = {'pickled_bytes': pickled_bytes}
+        response = self.post("/artifacts/python", files=files, data=data)
+        return response.json()
+
+    def download_artifact(
+        self,
+        run_id: str,
+        episode_id: str,
+        artifact_key: str
+    ) -> bytes:
+        """
+        Download a blob artifact file.
+
+        Args:
+            run_id: Run ID
+            episode_id: Episode ID
+            artifact_key: Artifact key
+
+        Returns:
+            Artifact file content as bytes
+        """
+        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/download"
+        response = self.get(endpoint)
+        return response.content
+
+    def update_metrics(
+        self,
+        run_id: str,
+        episode_id: str,
+        artifact_key: str,
+        metric_type: Optional[str] = None,
+        metric_data: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """
+        Update metrics artifact.
+
+        Args:
+            run_id: Run ID
+            episode_id: Episode ID
+            artifact_key: Artifact key
+            metric_type: Optional new metric type
+            metric_data: Optional new metric data
+
+        Returns:
+            Updated artifact data
+        """
+        data = {}
+        if metric_type:
+            data["metric_type"] = metric_type
+        if metric_data:
+            data["metric_data"] = metric_data
+
+        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics"
+        response = self.put(endpoint, data=data)
+        return response.json()
+
+    def append_metrics(
+        self,
+        run_id: str,
+        episode_id: str,
+        artifact_key: str,
+        metric_data: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Append metrics data to existing metrics artifact.
+
+        Args:
+            run_id: Run ID
+            episode_id: Episode ID
+            artifact_key: Artifact key
+            metric_data: Metric data points to append
+
+        Returns:
+            Updated artifact data
+        """
+        data = {"metric_data": metric_data}
+        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics/append"
+        response = self.post(endpoint, data=data)
+        return response.json()
+
+    def clear_metrics(
+        self,
+        run_id: str,
+        episode_id: str,
+        artifact_key: str
+    ) -> Dict[str, Any]:
+        """
+        Clear all metrics data from a metrics artifact.
+
+        Args:
+            run_id: Run ID
+            episode_id: Episode ID
+            artifact_key: Artifact key
+
+        Returns:
+            Updated artifact data with cleared metrics
+        """
+        endpoint = f"/artifacts/{run_id}/{episode_id}/{artifact_key}/metrics/clear"
+        response = self.delete(endpoint)
         return response.json()

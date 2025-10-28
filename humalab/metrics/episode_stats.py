@@ -50,9 +50,9 @@ class EpisodeStats(Metrics):
             self._values[episode_id] = data
             self._results[episode_id] = episode_status
 
-    def _submit(self) -> None:
+    def _finalize(self) -> None:
         if not self._values:
             return
-        super()._submit()
+        super()._finalize()
         
     

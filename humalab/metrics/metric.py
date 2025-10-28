@@ -32,12 +32,12 @@ class Metrics:
                 self._x_values.append(self._step)
                 self._step += 1
         
-    def submit(self) -> None:
-        """Submit the logged data for processing."""
-        self._submit()
+    def finalize(self) -> None:
+        """Finalize the logged data for processing."""
+        self._finalize()
         self._values = []
         self._x_values = []
 
-    def _submit(self) -> None:
+    def _finalize(self) -> None:
         """Process the logged data before submission. To be implemented by subclasses."""
         pass
