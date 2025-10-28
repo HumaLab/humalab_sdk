@@ -1,5 +1,19 @@
 from abc import abstractmethod
 from typing import Any
+from enum import Enum
+
+
+class MetricType(Enum):
+    """Metric types supported by Humalab."""
+    LINE = "line"
+    BAR = "bar"
+    SCATTER = "scatter"
+    # GAUGE = "gauge"
+    # COUNTER = "counter"
+    HISTOGRAM = "histogram"
+    GAUSSIAN = "gaussian"
+    HEATMAP = "heatmap"
+    THREE_D_MAP = "3d_map"
 
 
 class Metrics:
@@ -32,12 +46,19 @@ class Metrics:
                 self._x_values.append(self._step)
                 self._step += 1
         
-    def finalize(self) -> None:
+    def finalize(self) -> dict:
         """Finalize the logged data for processing."""
-        self._finalize()
+        ret_result = self._finalize()
+
+        return ret_result
+
+    def _finalize(self) -> dict:
+        """Process the logged data before submission. To be implemented by subclasses."""
+        ret_val = {
+            "values": self._values,
+            "x_values": self._x_values
+        }
         self._values = []
         self._x_values = []
-
-    def _finalize(self) -> None:
-        """Process the logged data before submission. To be implemented by subclasses."""
-        pass
+        self._step = -1
+        return ret_val    

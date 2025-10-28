@@ -6,6 +6,8 @@ from typing import Any
 import pickle
 import traceback
 
+from humalab.utils import is_standard_type
+
 
 class Episode:
     def __init__(self, 
@@ -19,6 +21,7 @@ class Episode:
                  timeout: float | None = None,):
         self._run_id = run_id
         self._episode_id = episode_id
+        self._episode_status = EpisodeStatus.RUNNING
         self._scenario_conf = scenario_conf
         self._logs = {}
         self._episode_vals = episode_vals or {}
@@ -39,6 +42,10 @@ class Episode:
     @property
     def scenario(self) -> DictConfig | ListConfig:
         return self._scenario_conf
+    
+    @property
+    def status(self) -> EpisodeStatus:
+        return self._episode_status
     
     @property
     def episode_vals(self) -> dict:
@@ -110,10 +117,11 @@ class Episode:
         if self._is_finished:
             raise RuntimeError("Episode has already been finished.")
         self._is_finished = True
+        self._episode_status = status
 
         self._api_client.upload_code(
             artifact_key="scenario",
-            run_id=self._id,
+            run_id=self._run_id,
             episode_id=self._episode_id,
             code_content=self.yaml
         )
@@ -123,17 +131,19 @@ class Episode:
             if isinstance(value, Metrics):
                 value.finalize()
             else:
+                if not is_standard_type(value):
+                    raise ValueError(f"Value for key '{key}' is not a standard type.")
                 pickled = pickle.dumps(value)
                 self._api_client.upload_python(
                     artifact_key=key,
-                    run_id=self._id,
+                    run_id=self._run_id,
                     episode_id=self._episode_id,
                     pickled_bytes=pickled
                 )
         
         self._api_client.update_episode(
             run_id=self._run_id,
-            episode_name=self._episode_id,
+            episode_id=self._episode_id,
             status=status,
             err_msg=err_msg
         )

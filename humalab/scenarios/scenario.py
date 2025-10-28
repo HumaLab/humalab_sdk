@@ -12,6 +12,7 @@ from humalab.dists.log_uniform import LogUniform
 from humalab.dists.gaussian import Gaussian
 from humalab.dists.truncated_gaussian import TruncatedGaussian
 from functools import partial
+from humalab.constants import GraphType, ScenarioStatType
 import copy
 import uuid
 
@@ -36,19 +37,19 @@ DISTRIBUTION_MAP = {
 
     # 2D distributions
     "uniform_2d": Uniform,
-    "bernoulli_2d": Bernoulli,
-    "categorical_2d": Categorical,
-    "discrete_2d": Discrete,
-    "log_uniform_2d": LogUniform,
+    # "bernoulli_2d": Bernoulli,
+    # "categorical_2d": Categorical,
+    # "discrete_2d": Discrete,
+    # "log_uniform_2d": LogUniform,
     "gaussian_2d": Gaussian,
     "truncated_gaussian_2d": TruncatedGaussian,
 
     # 3D distributions
     "uniform_3d": Uniform,
-    "bernoulli_3d": Bernoulli,
-    "categorical_3d": Categorical,
-    "discrete_3d": Discrete,
-    "log_uniform_3d": LogUniform,
+    # "bernoulli_3d": Bernoulli,
+    # "categorical_3d": Categorical,
+    # "discrete_3d": Discrete,
+    # "log_uniform_3d": LogUniform,
     "gaussian_3d": Gaussian,
     "truncated_gaussian_3d": TruncatedGaussian,
 
@@ -93,39 +94,13 @@ DISTRIBUTION_DIMENSION_MAP = {
 
     # 2D distributions
     "uniform_2d": 2,
-    "bernoulli_2d": 2,
-    "categorical_2d": 2,
-    "discrete_2d": 2,
-    "log_uniform_2d": 2,
     "gaussian_2d": 2,
     "truncated_gaussian_2d": 2,
 
     # 3D distributions
     "uniform_3d": 3,
-    "bernoulli_3d": 3,
-    "categorical_3d": 3,
-    "discrete_3d": 3,
-    "log_uniform_3d": 3,
     "gaussian_3d": 3,
     "truncated_gaussian_3d": 3,
-
-    # 4D distributions
-    # "uniform_4d": 4,
-    # "bernoulli_4d": 4,
-    # "categorical_4d": 4,
-    # "discrete_4d": 4,
-    # "log_uniform_4d": 4,
-    # "gaussian_4d": 4,
-    # "truncated_gaussian_4d": 4,
-
-    # nD distributions
-    # "uniform_nd": -1,
-    # "bernoulli_nd": -1,
-    # "categorical_nd": -1,
-    # "discrete_nd": -1,
-    # "log_uniform_nd": -1,
-    # "gaussian_nd": -1,
-    # "truncated_gaussian_nd": -1,
 }
 
 DISTRIBUTION_PARAM_NUM_MAP = {
@@ -149,39 +124,73 @@ DISTRIBUTION_PARAM_NUM_MAP = {
 
     # 2D distributions
     "uniform_2d": 2,
-    "bernoulli_2d": 1,
-    "categorical_2d": 2,
-    "discrete_2d": 3,
-    "log_uniform_2d": 2,
     "gaussian_2d": 2,
     "truncated_gaussian_2d": 4,
 
     # 3D distributions
     "uniform_3d": 2,
-    "bernoulli_3d": 1,
-    "categorical_3d": 2,
-    "discrete_3d": 3,
-    "log_uniform_3d": 2,
     "gaussian_3d": 2,
     "truncated_gaussian_3d": 4,
+}
 
-    # 4D distributions
-    # "uniform_4d": 2,
-    # "bernoulli_4d": 1,
-    # "categorical_4d": 2,
-    # "discrete_4d": 3,
-    # "log_uniform_4d": 2,
-    # "gaussian_4d": 2,
-    # "truncated_gaussian_4d": 4,
+SCENARIO_STATS_TYPE_MAP = {
+    # 0D distributions
+    "uniform": ScenarioStatType.ONE_D,
+    "bernoulli": ScenarioStatType.ONE_D,
+    "categorical": ScenarioStatType.ONE_D,
+    "discrete": ScenarioStatType.ONE_D,
+    "log_uniform": ScenarioStatType.ONE_D,
+    "gaussian": ScenarioStatType.ONE_D,
+    "truncated_gaussian": ScenarioStatType.ONE_D,
 
-    # nD distributions
-    # "uniform_nd": 3,
-    # "bernoulli_nd": 2,
-    # "categorical_nd": 3,
-    # "discrete_nd": 4,
-    # "log_uniform_nd": 3,
-    # "gaussian_nd": 3,
-    # "truncated_gaussian_nd": 5,
+    # 1D distributions
+    "uniform_1d": ScenarioStatType.ONE_D,
+    "bernoulli_1d": ScenarioStatType.ONE_D,
+    "categorical_1d": ScenarioStatType.ONE_D,
+    "discrete_1d": ScenarioStatType.ONE_D,
+    "log_uniform_1d": ScenarioStatType.ONE_D,
+    "gaussian_1d": ScenarioStatType.ONE_D,
+    "truncated_gaussian_1d": ScenarioStatType.ONE_D,
+
+    # 2D distributions
+    "uniform_2d": ScenarioStatType.TWO_D,
+    "gaussian_2d": ScenarioStatType.TWO_D,
+    "truncated_gaussian_2d": ScenarioStatType.TWO_D,
+
+    # 3D distributions
+    "uniform_3d": ScenarioStatType.THREE_D,
+    "gaussian_3d": ScenarioStatType.THREE_D,
+    "truncated_gaussian_3d": ScenarioStatType.THREE_D,
+}
+
+DISTRIBUTION_GRAPH_TYPE = {
+    # 0D distributions
+    "uniform": GraphType.HISTOGRAM,
+    "bernoulli": GraphType.BAR,
+    "categorical": GraphType.BAR,
+    "discrete": GraphType.BAR,
+    "log_uniform": GraphType.HISTOGRAM,
+    "gaussian": GraphType.GAUSSIAN,
+    "truncated_gaussian": GraphType.GAUSSIAN,
+
+    # 1D distributions
+    "uniform_1d": GraphType.HISTOGRAM,
+    "bernoulli_1d": GraphType.BAR,
+    "categorical_1d": GraphType.BAR,
+    "discrete_1d": GraphType.BAR,
+    "log_uniform_1d": GraphType.HISTOGRAM,
+    "gaussian_1d": GraphType.GAUSSIAN,
+    "truncated_gaussian_1d": GraphType.GAUSSIAN,
+
+    # 2D distributions
+    "uniform_2d": GraphType.SCATTER,
+    "gaussian_2d": GraphType.HEATMAP,
+    "truncated_gaussian_2d": GraphType.HEATMAP,
+
+    # 3D distributions
+    "uniform_3d": GraphType.THREE_D_MAP,
+    "gaussian_3d": GraphType.THREE_D_MAP,
+    "truncated_gaussian_3d": GraphType.THREE_D_MAP,
 }
 
 class Scenario:
@@ -316,7 +325,12 @@ class Scenario:
             if isinstance(ret_val, list):
                 ret_val = ListConfig(ret_val)
             
-            self._episode_vals[key_path] = ret_val
+            self._episode_vals[key_path] = {
+                    "value": ret_val,
+                    "distribution": dist_name,
+                    "graph_type": DISTRIBUTION_GRAPH_TYPE[dist_name],
+                    "scenario_stat_type": SCENARIO_STATS_TYPE_MAP[dist_name],
+                }
             return ret_val
 
         for dist_name in DISTRIBUTION_MAP.keys():
