@@ -76,11 +76,11 @@ class ScenarioStats(Metrics):
         """
         if episode_id in self._results:
             if replace:
-                self._results[episode_id] = episode_status
+                self._results[episode_id] = episode_status.value
             else:   
                 raise ValueError(f"Data for episode_id {episode_id} already exists. Use replace=True to overwrite.")
         else:
-            self._results[episode_id] = episode_status
+            self._results[episode_id] = episode_status.value
 
     def _finalize(self) -> dict:
         ret_val = {
