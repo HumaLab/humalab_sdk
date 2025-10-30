@@ -16,6 +16,25 @@ from humalab.utils import is_standard_type
 from humalab.scenarios.scenario import Scenario
 
 class Run:
+    """Represents a run containing multiple episodes for a scenario.
+
+    A Run is a context manager that tracks experiments or evaluations using a specific
+    scenario. It manages episode creation, metric logging, and code artifacts. The run
+    can contain multiple episodes, each representing a single execution instance.
+
+    Use as a context manager to automatically handle run lifecycle:
+        with Run(scenario=my_scenario) as run:
+            # Your code here
+            pass
+
+    Attributes:
+        project (str): The project name under which the run is created.
+        id (str): The unique identifier for the run.
+        name (str): The name of the run.
+        description (str): A description of the run.
+        tags (list[str]): A list of tags associated with the run.
+        scenario (Scenario): The scenario associated with the run.
+    """
     def __init__(self,
                  scenario: Scenario,
                  project: str = DEFAULT_PROJECT,
@@ -110,9 +129,11 @@ class Run:
         return self._scenario
     
     def __enter__(self):
+        """Enter the run context."""
         return self
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
+        """Exit the run context and finalize the run."""
         if self._is_finished:
             return
         if exception_type is not None:
@@ -122,10 +143,14 @@ class Run:
             self.finish()
 
     def create_episode(self, episode_id: str | None = None) -> Episode:
-        """Reset the run for a new episode.
+        """Create a new episode for this run.
 
         Args:
-            status (EpisodeStatus): The status of the current episode before reset.
+            episode_id (str | None): Optional unique identifier for the episode.
+                If None, a UUID is generated automatically.
+
+        Returns:
+            Episode: The newly created episode instance.
         """
         episode = None
         episode_id = episode_id or str(uuid.uuid4())
@@ -151,6 +176,15 @@ class Run:
         self._episodes[episode.episode_id] = episode
     
     def add_metric(self, name: str, metric: Metrics) -> None:
+        """Add a metric to track for this run.
+
+        Args:
+            name (str): The name of the metric.
+            metric (Metrics): The metric instance to add.
+
+        Raises:
+            ValueError: If the name is already used.
+        """
         if name in self._logs:
             raise ValueError(f"{name} is a reserved name and is not allowed.")
         self._logs[name] = metric
@@ -172,6 +206,16 @@ class Run:
 
         
     def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
+        """Log data points or values for the run.
+
+        Args:
+            data (dict): Dictionary of key-value pairs to log.
+            x (dict | None): Optional dictionary of x-axis values for each key.
+            replace (bool): Whether to replace existing values. Defaults to False.
+
+        Raises:
+            ValueError: If a key is reserved or logging fails.
+        """
         for key, value in data.items():
             if key in RESERVED_NAMES:
                 raise ValueError(f"{key} is a reserved name and is not allowed.")

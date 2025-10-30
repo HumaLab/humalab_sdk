@@ -4,6 +4,12 @@ import numpy as np
 
 
 class Gaussian(Distribution):
+    """Gaussian (normal) distribution.
+
+    Samples values from a normal distribution with specified mean (loc) and
+    standard deviation (scale). Supports scalar outputs as well as multi-dimensional
+    arrays with 1D, 2D, or 3D variants.
+    """
     def __init__(self,
                  generator: np.random.Generator,
                  loc: float | Any,
@@ -25,6 +31,15 @@ class Gaussian(Distribution):
 
     @staticmethod
     def validate(dimensions: int, *args) -> bool:
+        """Validate distribution parameters for the given dimensions.
+
+        Args:
+            dimensions (int): The number of dimensions (0 for scalar, -1 for any).
+            *args: The distribution parameters (loc, scale).
+
+        Returns:
+            bool: True if parameters are valid, False otherwise.
+        """
         arg1 = args[0]
         arg2 = args[1]
         if dimensions == 0:
@@ -46,9 +61,19 @@ class Gaussian(Distribution):
         return True
 
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the Gaussian distribution.
+
+        Returns:
+            int | float | np.ndarray: Sampled value(s) from N(loc, scale).
+        """
         return self._generator.normal(loc=self._loc, scale=self._scale, size=self._size)
 
     def __repr__(self) -> str:
+        """String representation of the Gaussian distribution.
+
+        Returns:
+            str: String representation showing loc, scale, and size.
+        """
         return f"Gaussian(loc={self._loc}, scale={self._scale}, size={self._size})"
     
     @staticmethod

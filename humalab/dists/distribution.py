@@ -3,6 +3,12 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 class Distribution(ABC):
+    """Abstract base class for probability distributions.
+
+    All distribution classes inherit from this base class and must implement
+    the _sample() method. Distributions maintain a random number generator
+    and track the last sampled value.
+    """
     def __init__(self,
                  generator: np.random.Generator) -> None:
         """
@@ -27,6 +33,11 @@ class Distribution(ABC):
 
     @abstractmethod
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the distribution.
+
+        Returns:
+            int | float | np.ndarray: The sampled value(s).
+        """
         pass
 
     @property

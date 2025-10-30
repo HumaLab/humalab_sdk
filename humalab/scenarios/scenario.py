@@ -194,6 +194,20 @@ DISTRIBUTION_GRAPH_TYPE = {
 }
 
 class Scenario:
+    """Manages scenario configurations with probabilistic distributions.
+
+    A Scenario encapsulates a configuration template that can contain distribution
+    resolvers (e.g., ${uniform:0,1}). When resolved, these distributions are sampled
+    to produce concrete scenario instances. Each resolution creates a new episode
+    with different sampled values.
+
+    Supported distributions include uniform, gaussian, bernoulli, categorical,
+    discrete, log_uniform, and truncated_gaussian, with support for 0D-3D variants.
+
+    Attributes:
+        template (DictConfig | ListConfig): The template scenario configuration.
+        yaml (str): The current scenario configuration as a YAML string.
+    """
     dist_cache = {}
     def __init__(self) -> None:
         self._generator = np.random.default_rng()
@@ -205,20 +219,21 @@ class Scenario:
         self._lock = RLock()
 
     def init(self,
-             scenario: str | list | dict | None = None, 
-             seed: int | None=None, 
+             scenario: str | list | dict | None = None,
+             seed: int | None=None,
              scenario_id: str | None=None,
              # num_env: int | None = None
              ) -> None:
         """
         Initialize the scenario with the given parameters.
-        
+
         Args:
-            episode_id: The ID of the current episode.
-            scenario: The scenario configuration (YAML string, list, or dict).
-            seed: Optional seed for random number generation.
-            scenario_id: Optional scenario ID. If None, a new UUID is generated.
-            # num_env: Optional number of parallel environments.
+            scenario (str | list | dict | None): The scenario configuration. Can be a YAML
+                string, list, or dict. If None, an empty configuration is used.
+            seed (int | None): Optional seed for random number generation. If None, uses
+                a non-deterministic seed.
+            scenario_id (str | None): Optional scenario ID in the format 'id' or 'id:version'.
+                If None, a new UUID is generated.
         """
         self._num_env = None # num_env
 

@@ -12,6 +12,31 @@ from humalab.utils import is_standard_type
 
 
 class Episode:
+    """Represents a single episode within a run.
+
+    An Episode is a context manager that tracks a single execution instance of a
+    scenario. It provides access to scenario configuration values, supports metric
+    logging, and manages episode lifecycle with various completion statuses.
+
+    Episodes can be finished with different statuses:
+    - SUCCESS: Episode completed successfully
+    - FAILED: Episode failed
+    - CANCELED: Episode was discarded/canceled
+    - ERRORED: Episode encountered an error
+
+    Use as a context manager to automatically handle episode lifecycle:
+        with episode:
+            # Your code here
+            pass
+
+    Attributes:
+        run_id (str): The unique identifier of the parent run.
+        episode_id (str): The unique identifier for this episode.
+        scenario (DictConfig | ListConfig): The resolved scenario configuration.
+        status (EpisodeStatus): The current status of the episode.
+        episode_vals (dict): The sampled values from scenario distributions.
+        is_finished (bool): Whether the episode has been finalized.
+    """
     def __init__(self, 
                  run_id: str, 
                  episode_id: str, 
@@ -35,32 +60,64 @@ class Episode:
 
     @property
     def run_id(self) -> str:
+        """The unique identifier of the parent run.
+
+        Returns:
+            str: The run ID.
+        """
         return self._run_id
-    
+
     @property
     def episode_id(self) -> str:
+        """The unique identifier for this episode.
+
+        Returns:
+            str: The episode ID.
+        """
         return self._episode_id
 
     @property
     def scenario(self) -> DictConfig | ListConfig:
+        """The resolved scenario configuration for this episode.
+
+        Returns:
+            DictConfig | ListConfig: The scenario configuration.
+        """
         return self._scenario_conf
-    
+
     @property
     def status(self) -> EpisodeStatus:
+        """The current status of the episode.
+
+        Returns:
+            EpisodeStatus: The episode status.
+        """
         return self._episode_status
-    
+
     @property
     def episode_vals(self) -> dict:
+        """The sampled values from scenario distributions.
+
+        Returns:
+            dict: Dictionary mapping scenario variable names to their sampled values.
+        """
         return self._episode_vals
-    
+
     @property
     def is_finished(self) -> bool:
+        """Whether the episode has been finalized.
+
+        Returns:
+            bool: True if the episode is finished, False otherwise.
+        """
         return self._is_finished
     
     def __enter__(self):
+        """Enter the episode context."""
         return self
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
+        """Exit the episode context and finalize the episode."""
         if self._is_finished:
             return
         if exception_type is not None:
@@ -80,6 +137,15 @@ class Episode:
         raise KeyError(f"'Scenario' object has no key '{key}'")
 
     def add_metric(self, name: str, metric: Metrics) -> None:
+        """Add a metric to track for this episode.
+
+        Args:
+            name (str): The name of the metric.
+            metric (Metrics): The metric instance to add.
+
+        Raises:
+            ValueError: If the name is already used.
+        """
         if name in self._logs:
             raise ValueError(f"{name} is a reserved name and is not allowed.")
         self._logs[name] = metric
@@ -101,6 +167,16 @@ class Episode:
         )
 
     def log(self, data: dict, x: dict | None = None, replace: bool = False) -> None:
+        """Log data points or values for the episode.
+
+        Args:
+            data (dict): Dictionary of key-value pairs to log.
+            x (dict | None): Optional dictionary of x-axis values for each key.
+            replace (bool): Whether to replace existing values. Defaults to False.
+
+        Raises:
+            ValueError: If a key is reserved or logging fails.
+        """
         for key, value in data.items():
             if key in RESERVED_NAMES:
                 raise ValueError(f"{key} is a reserved name and is not allowed.")
@@ -127,15 +203,24 @@ class Episode:
         return OmegaConf.to_yaml(self._scenario_conf)
     
     def discard(self) -> None:
+        """Mark the episode as discarded/canceled."""
         self._finish(EpisodeStatus.CANCELED)
 
     def success(self) -> None:
+        """Mark the episode as successfully completed."""
         self._finish(EpisodeStatus.SUCCESS)
-    
+
     def fail(self) -> None:
+        """Mark the episode as failed."""
         self._finish(EpisodeStatus.FAILED)
 
     def finish(self, status: EpisodeStatus, err_msg: str | None = None) -> None:
+        """Finish the episode with a specific status.
+
+        Args:
+            status (EpisodeStatus): The final status of the episode.
+            err_msg (str | None): Optional error message if the episode errored.
+        """
         if self._is_finished:
             return
         self._is_finished = True

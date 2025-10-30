@@ -4,6 +4,11 @@ from typing import Any
 import numpy as np
 
 class Uniform(Distribution):
+    """Uniform distribution over a continuous or discrete range.
+
+    Samples values uniformly from the half-open interval [low, high). Supports
+    scalar outputs as well as multi-dimensional arrays with 1D, 2D, or 3D variants.
+    """
     def __init__(self, 
                  generator: np.random.Generator,
                  low: float | Any, 
@@ -25,6 +30,15 @@ class Uniform(Distribution):
 
     @staticmethod
     def validate(dimensions: int, *args) -> bool:
+        """Validate distribution parameters for the given dimensions.
+
+        Args:
+            dimensions (int): The number of dimensions (0 for scalar, -1 for any).
+            *args: The distribution parameters (low, high).
+
+        Returns:
+            bool: True if parameters are valid, False otherwise.
+        """
         arg1 = args[0]
         arg2 = args[1]
         if dimensions == 0:
@@ -46,9 +60,19 @@ class Uniform(Distribution):
         return True
 
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the uniform distribution.
+
+        Returns:
+            int | float | np.ndarray: Sampled value(s) from [low, high).
+        """
         return self._generator.uniform(self._low, self._high, size=self._size)
 
     def __repr__(self) -> str:
+        """String representation of the uniform distribution.
+
+        Returns:
+            str: String representation showing low, high, and size.
+        """
         return f"Uniform(low={self._low}, high={self._high}, size={self._size})"
     
     @staticmethod
