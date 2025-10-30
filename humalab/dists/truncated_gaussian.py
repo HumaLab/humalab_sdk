@@ -4,6 +4,13 @@ import numpy as np
 
 
 class TruncatedGaussian(Distribution):
+    """Truncated Gaussian (normal) distribution.
+
+    Samples values from a normal distribution with specified mean (loc) and
+    standard deviation (scale), but constrained to lie within [low, high].
+    Values outside the bounds are resampled until they fall within range.
+    Supports scalar outputs as well as multi-dimensional arrays with 1D, 2D, or 3D variants.
+    """
     def __init__(self,
                  generator: np.random.Generator,
                  loc: float | Any,
@@ -31,6 +38,15 @@ class TruncatedGaussian(Distribution):
 
     @staticmethod
     def validate(dimensions: int, *args) -> bool:
+        """Validate distribution parameters for the given dimensions.
+
+        Args:
+            dimensions (int): The number of dimensions (0 for scalar, -1 for any).
+            *args: The distribution parameters (loc, scale, low, high).
+
+        Returns:
+            bool: True if parameters are valid, False otherwise.
+        """
         arg1 = args[0]
         arg2 = args[1]
         arg3 = args[2]
@@ -66,6 +82,14 @@ class TruncatedGaussian(Distribution):
         return True
     
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the truncated Gaussian distribution.
+
+        Samples are generated from N(loc, scale) and resampled if they fall
+        outside [low, high].
+
+        Returns:
+            int | float | np.ndarray: Sampled value(s) within [low, high].
+        """
         samples = self._generator.normal(loc=self._loc, scale=self._scale, size=self._size)
         mask = (samples < self._low) | (samples > self._high)
         while np.any(mask):
@@ -74,6 +98,11 @@ class TruncatedGaussian(Distribution):
         return samples
 
     def __repr__(self) -> str:
+        """String representation of the truncated Gaussian distribution.
+
+        Returns:
+            str: String representation showing loc, scale, low, high, and size.
+        """
         return f"TruncatedGaussian(loc={self._loc}, scale={self._scale}, low={self._low}, high={self._high}, size={self._size})"
     
     @staticmethod

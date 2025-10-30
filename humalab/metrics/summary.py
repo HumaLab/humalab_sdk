@@ -4,19 +4,25 @@ from humalab.constants import MetricDimType, GraphType
 
 
 class Summary(Metrics):
-    def __init__(self, 
+    """A metric that aggregates logged values into a single summary statistic.
+
+    Summary metrics collect values throughout a run or episode and compute a single
+    aggregated result. Supported aggregation methods include min, max, mean, first,
+    last, and none (no aggregation).
+
+    Attributes:
+        summary (str): The aggregation method used.
+    """
+    def __init__(self,
                  summary: str,
                  ) -> None:
         """
         A summary metric that captures a single value per episode or run.
 
         Args:
-            name (str): The name of the metric.
-            summary (str | None): Specify aggregate metrics added to summary.
+            summary (str): Specify the aggregation method for the summary.
                 Supported aggregations include "min", "max", "mean", "last",
-                "first", and "none". "none" prevents a summary
-                from being generated.
-            granularity (MetricGranularity): The granularity of the metric.
+                "first", and "none". "none" prevents a summary from being generated.
         """
         if summary not in {"min", "max", "mean", "last", "first", "none"}:
             raise ValueError(f"Unsupported summary type: {summary}. Supported types are 'min', 'max', 'mean', 'last', 'first', and 'none'.")
@@ -26,9 +32,19 @@ class Summary(Metrics):
     
     @property
     def summary(self) -> str:
+        """The aggregation method for this summary metric.
+
+        Returns:
+            str: The summary type (e.g., 'min', 'max', 'mean').
+        """
         return self._summary
 
     def _finalize(self) -> dict:
+        """Compute the final aggregated value.
+
+        Returns:
+            dict: Dictionary containing the aggregated value and summary type.
+        """
         if not self._values:
             return {
                 "value": None,

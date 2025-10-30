@@ -4,6 +4,11 @@ from typing import Any
 import numpy as np
 
 class Bernoulli(Distribution):
+    """Bernoulli distribution for binary outcomes.
+
+    Samples binary values (0 or 1) with a specified probability of success.
+    Supports scalar outputs as well as multi-dimensional arrays with 1D variants.
+    """
     def __init__(self,
                  generator: np.random.Generator,
                  p: float | Any,
@@ -22,6 +27,15 @@ class Bernoulli(Distribution):
 
     @staticmethod
     def validate(dimensions: int, *args) -> bool:
+        """Validate distribution parameters for the given dimensions.
+
+        Args:
+            dimensions (int): The number of dimensions (0 for scalar, -1 for any).
+            *args: The distribution parameters (p).
+
+        Returns:
+            bool: True if parameters are valid, False otherwise.
+        """
         arg1 = args[0]
         if dimensions == 0:
             if not isinstance(arg1, (int, float)):
@@ -37,9 +51,19 @@ class Bernoulli(Distribution):
         return True
 
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the Bernoulli distribution.
+
+        Returns:
+            int | float | np.ndarray: Sampled binary value(s) (0 or 1).
+        """
         return self._generator.binomial(n=1, p=self._p, size=self._size)
 
     def __repr__(self) -> str:
+        """String representation of the Bernoulli distribution.
+
+        Returns:
+            str: String representation showing p and size.
+        """
         return f"Bernoulli(p={self._p}, size={self._size})"
     
     @staticmethod

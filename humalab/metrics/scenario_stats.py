@@ -16,9 +16,16 @@ SCENARIO_STATS_NEED_FLATTEN = {
 
 
 class ScenarioStats(Metrics):
-    """Metric to track scenario statistics such as total reward, length, and success.
+    """Metric to track scenario statistics across episodes.
+
+    This class logs sampled values from scenario distributions and tracks episode
+    statuses. It supports various distribution types and automatically handles
+    flattening for 1D distributions.
 
     Attributes:
+        name (str): The name of the scenario statistic.
+        distribution_type (str): The type of distribution (e.g., 'uniform', 'gaussian').
+        artifact_type (ArtifactType): The artifact type, always SCENARIO_STATS.
     """
 
     def __init__(self, 
@@ -39,17 +46,43 @@ class ScenarioStats(Metrics):
 
     @property
     def name(self) -> str:
+        """The name of the scenario statistic.
+
+        Returns:
+            str: The statistic name.
+        """
         return self._name
-    
+
     @property
     def distribution_type(self) -> str:
+        """The type of distribution used for this statistic.
+
+        Returns:
+            str: The distribution type (e.g., 'uniform', 'gaussian').
+        """
         return self._distribution_type
 
     @property
     def artifact_type(self) -> ArtifactType:
+        """The artifact type, always SCENARIO_STATS.
+
+        Returns:
+            ArtifactType: The artifact type.
+        """
         return self._artifact_type
     
     def log(self, data: Any, x: Any = None, replace: bool = False) -> None:
+        """Log a sampled value from the scenario distribution.
+
+        Args:
+            data (Any): The sampled value to log.
+            x (Any | None): The key/identifier for this sample (typically episode_id).
+                If None, auto-incrementing step is used.
+            replace (bool): Whether to replace an existing value. Defaults to False.
+
+        Raises:
+            ValueError: If data for the given x already exists and replace is False.
+        """
         if x in self._values:
             if replace:
                 if self._distribution_type in SCENARIO_STATS_NEED_FLATTEN:
@@ -62,17 +95,17 @@ class ScenarioStats(Metrics):
                 data = data[0]
             self._values[x] = data
     
-    def log_status(self, 
+    def log_status(self,
                    episode_id: str,
-                   episode_status: EpisodeStatus, 
+                   episode_status: EpisodeStatus,
                    replace: bool = False) -> None:
-        """Log a new data point for the metric. The behavior depends on the granularity.    
+        """Log the status of an episode.
 
         Args:
-            data (Any): The data point to log.
-            x (Any | None): The x-axis value associated with the data point.
-                if None, the current step is used.
-            replace (bool): Whether to replace the last logged value.
+            episode_id (str): The unique identifier of the episode.
+            episode_status (EpisodeStatus): The status of the episode.
+            replace (bool): Whether to replace an existing status for this episode.
+                Defaults to False.
         """
         if episode_id in self._results:
             if replace:
@@ -83,6 +116,11 @@ class ScenarioStats(Metrics):
             self._results[episode_id] = episode_status.value
 
     def _finalize(self) -> dict:
+        """Finalize and return all collected scenario statistics.
+
+        Returns:
+            dict: Dictionary containing values, results, and distribution type.
+        """
         ret_val = {
             "values": self._values,
             "results": self._results,

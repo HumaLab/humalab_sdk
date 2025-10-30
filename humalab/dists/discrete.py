@@ -4,6 +4,12 @@ from typing import Any
 import numpy as np
 
 class Discrete(Distribution):
+    """Discrete uniform distribution over integers.
+
+    Samples integer values uniformly from a range [low, high). The endpoint
+    parameter controls whether the upper bound is inclusive or exclusive.
+    Supports scalar outputs as well as multi-dimensional arrays with 1D variants.
+    """
     def __init__(self, 
                  generator: np.random.Generator,
                  low: int | Any, 
@@ -29,6 +35,15 @@ class Discrete(Distribution):
     
     @staticmethod
     def validate(dimensions: int, *args) -> bool:
+        """Validate distribution parameters for the given dimensions.
+
+        Args:
+            dimensions (int): The number of dimensions (0 for scalar, -1 for any).
+            *args: The distribution parameters (low, high).
+
+        Returns:
+            bool: True if parameters are valid, False otherwise.
+        """
         arg1 = args[0]
         arg2 = args[1]
         if dimensions == 0:
@@ -50,9 +65,19 @@ class Discrete(Distribution):
         return True
 
     def _sample(self) -> int | float | np.ndarray:
+        """Generate a sample from the discrete distribution.
+
+        Returns:
+            int | float | np.ndarray: Sampled integer value(s) from [low, high).
+        """
         return self._generator.integers(self._low, self._high, size=self._size, endpoint=self._endpoint)
 
     def __repr__(self) -> str:
+        """String representation of the discrete distribution.
+
+        Returns:
+            str: String representation showing low, high, size, and endpoint.
+        """
         return f"Discrete(low={self._low}, high={self._high}, size={self._size}, endpoint={self._endpoint})"
     
     @staticmethod

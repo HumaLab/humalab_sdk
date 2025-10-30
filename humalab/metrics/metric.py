@@ -8,6 +8,12 @@ class Metrics:
                  graph_type: GraphType=GraphType.LINE) -> None:
         """
         Base class for different types of metrics.
+
+        Args:
+            metric_dim_type (MetricDimType): The dimensionality of the metric data
+                (e.g., ZERO_D, ONE_D, TWO_D, THREE_D). Defaults to ONE_D.
+            graph_type (GraphType): The type of graph to use for visualization
+                (e.g., LINE, BAR, HISTOGRAM, SCATTER). Defaults to LINE.
         """
         self._values = []
         self._x_values = []
@@ -17,10 +23,20 @@ class Metrics:
 
     @property
     def metric_dim_type(self) -> MetricDimType:
+        """The dimensionality of the metric data.
+
+        Returns:
+            MetricDimType: The metric dimension type.
+        """
         return self._metric_dim_type
-    
+
     @property
     def graph_type(self) -> GraphType:
+        """The type of graph used for visualization.
+
+        Returns:
+            GraphType: The graph type.
+        """
         return self._graph_type
     
     def log(self, data: Any, x: Any = None, replace: bool = False) -> None:
