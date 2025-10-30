@@ -127,11 +127,37 @@ class Episode:
             self.finish(status=EpisodeStatus.SUCCESS)
 
     def __getattr__(self, name: Any) -> Any:
+        """Access scenario configuration values as attributes.
+
+        Allows accessing scenario configuration using dot notation (e.g., episode.my_param).
+
+        Args:
+            name (Any): The attribute/key name from scenario configuration.
+
+        Returns:
+            Any: The value from scenario configuration.
+
+        Raises:
+            AttributeError: If the attribute is not in scenario configuration.
+        """
         if name in self._scenario_conf:
             return self._scenario_conf[name]
         raise AttributeError(f"'Scenario' object has no attribute '{name}'")
 
     def __getitem__(self, key: Any) -> Any:
+        """Access scenario configuration values using subscript notation.
+
+        Allows accessing scenario configuration using bracket notation (e.g., episode['my_param']).
+
+        Args:
+            key (Any): The key name from scenario configuration.
+
+        Returns:
+            Any: The value from scenario configuration.
+
+        Raises:
+            KeyError: If the key is not in scenario configuration.
+        """
         if key in self._scenario_conf:
             return self._scenario_conf[key]
         raise KeyError(f"'Scenario' object has no key '{key}'")
@@ -240,7 +266,7 @@ class Episode:
                 pickled = pickle.dumps(metric_val["value"])
                 self._api_client.upload_python(
                     artifact_key=key,
-                    run_id=self._id,
+                    run_id=self._run_id,
                     episode_id=self._episode_id,
                     pickled_bytes=pickled
                 )
@@ -249,7 +275,7 @@ class Episode:
                 pickled = pickle.dumps(metric_val)
                 self._api_client.upload_metrics(
                     artifact_key=key,
-                    run_id=self._id,
+                    run_id=self._run_id,
                     episode_id=self._episode_id,
                     pickled_bytes=pickled,
                     graph_type=value.graph_type.value,
