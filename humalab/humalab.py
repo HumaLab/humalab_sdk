@@ -22,6 +22,17 @@ def _pull_scenario(client: HumaLabApiClient,
                    project: str,
                    scenario: str | list | dict | None = None,
                    scenario_id: str | None = None,) -> str | list | dict | None:
+    """Pull a scenario from the server if scenario_id is provided.
+
+    Args:
+        client (HumaLabApiClient): API client instance.
+        project (str): Project name.
+        scenario (str | list | dict | None): Local scenario configuration.
+        scenario_id (str | None): ID of scenario to pull from server.
+
+    Returns:
+        str | list | dict | None: The scenario configuration.
+    """
     if scenario_id is not None:
         scenario_arr = scenario_id.split(":")
         if len(scenario_arr) < 1:
@@ -159,10 +170,17 @@ def init(project: str | None = None,
             finish(status=RunStatus.FINISHED)
 
 def discard() -> None:
+    """Discard the current run by finishing it with CANCELED status."""
     finish(status=RunStatus.CANCELED)
 
 def finish(status: RunStatus = RunStatus.FINISHED,
            err_msg: str | None = None) -> None:
+    """Finish the current run.
+
+    Args:
+        status (RunStatus): The final status of the run. Defaults to FINISHED.
+        err_msg (str | None): Optional error message if the run errored.
+    """
     global _cur_run
     if _cur_run:
         _cur_run.finish(status=status, err_msg=err_msg)
@@ -173,6 +191,18 @@ def login(api_key: str | None = None,
           host: str | None = None,
           force: bool | None = None,
           timeout: float | None = None) -> bool:
+    """Configure HumaLab authentication and connection settings.
+
+    Args:
+        api_key (str | None): API key for authentication.
+        relogin (bool | None): Unused parameter (for compatibility).
+        host (str | None): API host URL.
+        force (bool | None): Unused parameter (for compatibility).
+        timeout (float | None): Request timeout in seconds.
+
+    Returns:
+        bool: Always returns True.
+    """
     humalab_config = HumalabConfig()
     humalab_config.api_key = api_key or humalab_config.api_key
     humalab_config.base_url = host or humalab_config.base_url

@@ -1,3 +1,10 @@
+"""Probability distributions for scenario randomization.
+
+This module provides various probability distribution classes used in scenario generation,
+including uniform, gaussian, bernoulli, categorical, discrete, log-uniform, and truncated
+gaussian distributions. Each supports 0D (scalar) and multi-dimensional (1D-3D) variants.
+"""
+
 from .bernoulli import Bernoulli
 from .categorical import Categorical
 from .discrete import Discrete

@@ -8,23 +8,56 @@ from typing import Any, Optional
 
         
 def _asset_dir(humalab_config: HumalabConfig, name: str, version: int) -> str:
+    """Get the local directory path for a specific asset version.
+
+    Args:
+        humalab_config (HumalabConfig): Configuration containing workspace path.
+        name (str): Asset name.
+        version (int): Asset version.
+
+    Returns:
+        str: Path to the asset directory.
+    """
     return os.path.join(humalab_config.workspace_path, "assets", name, f"{version}")
 
 def _create_asset_dir(humalab_config: HumalabConfig, name: str, version: int) -> bool:
+    """Create the local directory for an asset if it doesn't exist.
+
+    Args:
+        humalab_config (HumalabConfig): Configuration containing workspace path.
+        name (str): Asset name.
+        version (int): Asset version.
+
+    Returns:
+        bool: True if directory was created, False if it already existed.
+    """
     asset_dir = _asset_dir(humalab_config, name, version)
     if not os.path.exists(asset_dir):
         os.makedirs(asset_dir, exist_ok=True)
         return True
     return False
 
-def download(name: str, 
+def download(name: str,
              version: int | None=None,
              project: str = DEFAULT_PROJECT,
-             
+
              host: str | None = None,
              api_key: str | None = None,
              timeout: float | None = None,
              ) -> Any:
+    """Download a resource from HumaLab.
+
+    Args:
+        name (str): The resource name to download.
+        version (int | None): Optional specific version. If None, downloads latest.
+        project (str): The project name. Defaults to DEFAULT_PROJECT.
+        host (str | None): Optional API host override.
+        api_key (str | None): Optional API key override.
+        timeout (float | None): Optional timeout override.
+
+    Returns:
+        ResourceFile | URDFFile: The downloaded resource file object.
+    """
     humalab_config = HumalabConfig()
 
     api_client = HumaLabApiClient(base_url=host,
@@ -61,10 +94,25 @@ def list_resources(project: str = DEFAULT_PROJECT,
                    limit: int = 20,
                    offset: int = 0,
                    latest_only: bool = True,
-                    
+
                     host: str | None = None,
                     api_key: str | None = None,
                     timeout: float | None = None,) -> list[ResourceFile]:
+    """List available resources from HumaLab.
+
+    Args:
+        project (str): The project name. Defaults to DEFAULT_PROJECT.
+        resource_types (Optional[list[str | ResourceType]]): Filter by resource types.
+        limit (int): Maximum number of resources to return. Defaults to 20.
+        offset (int): Pagination offset. Defaults to 0.
+        latest_only (bool): Only return latest versions. Defaults to True.
+        host (str | None): Optional API host override.
+        api_key (str | None): Optional API key override.
+        timeout (float | None): Optional timeout override.
+
+    Returns:
+        list[ResourceFile]: List of resource file objects.
+    """
     api_client = HumaLabApiClient(base_url=host,
                                   api_key=api_key,
                                   timeout=timeout)
