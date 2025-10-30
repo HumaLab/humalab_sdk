@@ -1,11 +1,15 @@
+"""Constants and enumerations used throughout the HumaLab SDK."""
+
 from enum import Enum
 
 
 RESERVED_NAMES = {
     "sceanario"
 }
+"""Set of reserved names that cannot be used for metric or artifact keys."""
 
 DEFAULT_PROJECT = "default"
+"""Default project name used when no project is specified."""
 
 
 class ArtifactType(Enum):
@@ -17,6 +21,10 @@ class ArtifactType(Enum):
 
 
 class MetricType(Enum):
+    """Enumeration of metric types.
+
+    Maps to corresponding artifact types for metrics and scenario statistics.
+    """
     METRICS = ArtifactType.METRICS.value
     SCENARIO_STATS = ArtifactType.SCENARIO_STATS.value
 
