@@ -3,11 +3,22 @@ from humalab.constants import MetricDimType, GraphType
 
 
 class Metrics:
+    """Base class for tracking and logging metrics during runs and episodes.
+
+    Metrics provide a flexible way to log time-series data or aggregated values
+    during experiments. Data points are collected with optional x-axis values
+    and can be visualized using different graph types.
+
+    Subclasses should override _finalize() to implement custom processing logic.
+
+    Attributes:
+        metric_dim_type (MetricDimType): The dimensionality of the metric data.
+        graph_type (GraphType): The type of graph used for visualization.
+    """
     def __init__(self,
                  metric_dim_type: MetricDimType= MetricDimType.ONE_D,
                  graph_type: GraphType=GraphType.LINE) -> None:
-        """
-        Base class for different types of metrics.
+        """Initialize a new Metrics instance.
 
         Args:
             metric_dim_type (MetricDimType): The dimensionality of the metric data
@@ -40,13 +51,13 @@ class Metrics:
         return self._graph_type
     
     def log(self, data: Any, x: Any = None, replace: bool = False) -> None:
-        """Log a new data point for the metric. The behavior depends on the granularity.    
+        """Log a new data point for the metric.
 
         Args:
             data (Any): The data point to log.
             x (Any | None): The x-axis value associated with the data point.
-                if None, the current step is used.
-            replace (bool): Whether to replace the last logged value.
+                If None, uses an auto-incrementing step counter.
+            replace (bool): Whether to replace the last logged value. Defaults to False.
         """
         if replace:
             self._values[-1] = data

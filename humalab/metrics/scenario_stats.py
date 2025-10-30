@@ -106,6 +106,9 @@ class ScenarioStats(Metrics):
             episode_status (EpisodeStatus): The status of the episode.
             replace (bool): Whether to replace an existing status for this episode.
                 Defaults to False.
+
+        Raises:
+            ValueError: If status for the episode_id already exists and replace is False.
         """
         if episode_id in self._results:
             if replace:
