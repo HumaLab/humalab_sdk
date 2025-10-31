@@ -3,29 +3,13 @@
   command = "npm run build"
   publish = "out"
 
-# Serve Next.js static assets with correct MIME types
+# Headers for static assets
 [[headers]]
-  for = "/_next/*"
+  for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Content-Type = "text/css"
-
-# Don't redirect static assets - serve them as-is
-[[redirects]]
-  from = "/_next/*"
-  to = "/_next/:splat"
-  status = 200
-
-# Redirect root to docs page
+# Redirect root to docs (302 temporary)
 [[redirects]]
   from = "/"
   to = "/docs"
