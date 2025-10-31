@@ -107,7 +107,6 @@ HumaLab supports 1D, 2D, and 3D versions of several distributions. **Important**
 - **1D**: `uniform_1d(min, max)` → returns `[value]` (1-element array, same scalar params)
 - **2D**: `uniform_2d([min, min], [max, max])` → returns `[value1, value2]` (array params)
 - **3D**: `uniform_3d([min, min, min], [max, max, max])` → returns `[value1, value2, value3]` (array params)
-```
 
 ## Scenario Configuration
 
@@ -199,8 +198,11 @@ with hl.init(
             print(f"Gravity: {episode.gravity}")
             print(f"Friction: {episode.friction}")
             # Run your tests...
+```
 
-# Alternative: Pass scenario dict directly to init()
+**Alternative:** Pass scenario dict directly to `init()`:
+
+```python
 with hl.init(
     project="physics_sim",
     name="inline_test",
