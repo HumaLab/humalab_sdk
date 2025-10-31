@@ -32,24 +32,15 @@ Here's a simple example to get you started:
 import humalab as hl
 
 # Initialize HumaLab
-hl.init(api_key="your_api_key")
+with hl.init(api_key="your_api_key",
+             project="my_project",
+             name="my_first_run",
+             scenario={
+                 "param1": "${uniform(0, 10)}",
+                 "param2": "${gaussian(5, 1)}"
+             }) run:
 
-# Create a scenario
-scenario = hl.scenarios.Scenario()
-scenario.init(scenario={
-    "param1": "${uniform(0, 10)}",
-    "param2": "${gaussian(5, 1)}"
-})
-
-# Create a run
-run = hl.Run(
-    scenario=scenario,
-    project="my_project",
-    name="my_first_run"
-)
-
-# Create an episode
-with run:
+    # Create an episode
     with run.create_episode() as episode:
         # Your validation logic here
         # ...

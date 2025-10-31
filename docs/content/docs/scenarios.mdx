@@ -65,19 +65,23 @@ Binary distribution returning 0 or 1.
 ```
 
 #### Categorical Distribution
-Samples from discrete categories with specified probabilities.
+Samples from a list of choices (numbers or strings) with optional weights.
 
 ```python
-"${categorical(num_categories, probabilities)}"
-# Example: "${categorical(3, [0.5, 0.3, 0.2])}"
+"${categorical(choices, weights)}"
+# Example: "${categorical(['red', 'green', 'blue'], [0.5, 0.3, 0.2])}"
+# Example: "${categorical([10, 20, 30], [0.5, 0.3, 0.2])}"
+# Example: "${categorical(['A', 'B', 'C'])}"  # Uniform if weights not provided
 ```
 
 #### Discrete Distribution
-Samples from a discrete set of values with probabilities.
+Samples integer values uniformly from a range [low, high).
 
 ```python
-"${discrete(num_values, values, probabilities)}"
-# Example: "${discrete(3, [1, 5, 10], [0.5, 0.3, 0.2])}"
+"${discrete(low, high, endpoint)}"
+# Example: "${discrete(1, 10)}"  # Samples from [1, 10) - excludes 10
+# Example: "${discrete(1, 10, true)}"  # Samples from [1, 10] - includes 10
+# Example: "${discrete(0, 100, false)}"  # Samples from [0, 100) - excludes 100
 ```
 
 ### Multi-Dimensional Distributions
@@ -122,7 +126,7 @@ robot:
   mass: ${log_uniform(0.5, 2.0)}
 
 task:
-  difficulty: ${categorical(3, [0.5, 0.3, 0.2])}
+  difficulty: ${categorical(['easy', 'medium', 'hard'], [0.5, 0.3, 0.2])}
 """
 
 scenario.init(scenario=scenario_yaml)
