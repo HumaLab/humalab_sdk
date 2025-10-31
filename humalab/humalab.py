@@ -20,8 +20,9 @@ _cur_run: Run | None = None
 
 def _pull_scenario(client: HumaLabApiClient,
                    project: str,
-                   scenario: str | list | dict | None = None,
-                   scenario_id: str | None = None,) -> str | list | dict | None:
+                   seed: int | None = None,
+                   scenario: str | list | dict | Scenario | None = None,
+                   scenario_id: str | None = None,) -> Scenario:
     """Pull a scenario from the server if scenario_id is provided.
 
     Args:
@@ -43,8 +44,20 @@ def _pull_scenario(client: HumaLabApiClient,
         scenario_response = client.get_scenario(
             project_name=project,
             uuid=scenario_real_id, version=scenario_version)
-        return scenario_response["yaml_content"]
-    return scenario
+        final_scenario = scenario_response["yaml_content"]
+    else:
+        final_scenario = scenario
+
+    if isinstance(final_scenario, Scenario):
+        scenario_inst = final_scenario
+    else:
+        scenario_inst = Scenario()
+        scenario_inst.init(scenario=final_scenario, 
+                           seed=seed, 
+                           scenario_id=scenario_id,
+                           #num_env=num_env,
+                           )
+    return scenario_inst
 
 @contextmanager
 def init(project: str | None = None,
@@ -52,7 +65,7 @@ def init(project: str | None = None,
          description: str | None = None,
          id: str | None = None,
          tags: list[str] | None = None,
-         scenario: str | list | dict | None = None,
+         scenario: str | list | dict | Scenario | None = None,
          scenario_id: str | None = None,
          seed: int | None=None,
          auto_create_scenario: bool = False,
@@ -91,19 +104,14 @@ def init(project: str | None = None,
         api_client = HumaLabApiClient(base_url=base_url,
                                       api_key=api_key,
                                       timeout=timeout)
-        final_scenario = _pull_scenario(client=api_client, 
+        scenario_inst = _pull_scenario(client=api_client, 
                                         project=project,
+                                        seed=seed,
                                         scenario=scenario, 
                                         scenario_id=scenario_id)
         
         project_resp = api_client.create_project(name=project)
-
-        scenario_inst = Scenario()
-        scenario_inst.init(scenario=final_scenario, 
-                           seed=seed, 
-                           scenario_id=scenario_id,
-                           #num_env=num_env,
-                           )
+        
         if scenario_id is None and scenario is not None and auto_create_scenario:
             scenario_response = api_client.create_scenario(
                 project_name=project_resp['name'],

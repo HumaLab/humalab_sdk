@@ -168,6 +168,53 @@ resolved_scenario, episode_vals = scenario.resolve()
 print(resolved_scenario)  # Concrete values sampled from distributions
 ```
 
+## Using Scenarios with init()
+
+You can pass a Scenario instance directly to `init()` for more control over scenario initialization:
+
+```python
+import humalab as hl
+from humalab.scenarios import Scenario
+
+# Create and initialize a scenario
+scenario = Scenario()
+scenario.init(
+    scenario={
+        "gravity": "${uniform(-9.8, -8.8)}",
+        "friction": "${gaussian(0.5, 0.1)}",
+        "wind_speed": "${truncated_gaussian(0, 2, 0, 10)}"
+    },
+    seed=42  # Set seed for reproducibility
+)
+
+# Use the scenario instance in init()
+with hl.init(
+    project="physics_sim",
+    name="controlled_test",
+    scenario=scenario,  # Pass Scenario instance
+    api_key="your_api_key"
+) as run:
+    for i in range(10):
+        with run.create_episode() as episode:
+            print(f"Gravity: {episode.gravity}")
+            print(f"Friction: {episode.friction}")
+            # Run your tests...
+
+# Alternative: Pass scenario dict directly to init()
+with hl.init(
+    project="physics_sim",
+    name="inline_test",
+    scenario={
+        "gravity": "${uniform(-9.8, -8.8)}",
+        "friction": "${gaussian(0.5, 0.1)}"
+    },
+    seed=42,  # Seed can be passed here too
+    api_key="your_api_key"
+) as run:
+    # Scenario is automatically initialized
+    pass
+```
+
 ## Scenario IDs and Versions
 
 You can specify scenario IDs and versions for tracking:
