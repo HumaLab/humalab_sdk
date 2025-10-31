@@ -1,6 +1,17 @@
 from typing import Any
 from humalab.constants import MetricDimType, GraphType
 
+GRAPH_TO_DIM_TYPE = {
+    GraphType.NUMERIC: MetricDimType.ZERO_D,
+    GraphType.LINE: MetricDimType.ONE_D,
+    GraphType.HISTOGRAM: MetricDimType.ONE_D,
+    GraphType.BAR: MetricDimType.ONE_D,
+    GraphType.GAUSSIAN: MetricDimType.ONE_D,
+    GraphType.SCATTER: MetricDimType.TWO_D,
+    GraphType.HEATMAP: MetricDimType.TWO_D,
+    GraphType.THREE_D_MAP: MetricDimType.THREE_D,
+}
+
 
 class Metrics:
     """Base class for tracking and logging metrics during runs and episodes.
@@ -12,24 +23,20 @@ class Metrics:
     Subclasses should override _finalize() to implement custom processing logic.
 
     Attributes:
-        metric_dim_type (MetricDimType): The dimensionality of the metric data.
         graph_type (GraphType): The type of graph used for visualization.
     """
     def __init__(self,
-                 metric_dim_type: MetricDimType= MetricDimType.ONE_D,
                  graph_type: GraphType=GraphType.LINE) -> None:
         """Initialize a new Metrics instance.
 
         Args:
-            metric_dim_type (MetricDimType): The dimensionality of the metric data
-                (e.g., ZERO_D, ONE_D, TWO_D, THREE_D). Defaults to ONE_D.
             graph_type (GraphType): The type of graph to use for visualization
                 (e.g., LINE, BAR, HISTOGRAM, SCATTER). Defaults to LINE.
         """
         self._values = []
         self._x_values = []
         self._step = -1
-        self._metric_dim_type = metric_dim_type
+        self._metric_dim_type = GRAPH_TO_DIM_TYPE.get(graph_type, MetricDimType.ONE_D)
         self._graph_type = graph_type
 
     @property

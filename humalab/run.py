@@ -167,9 +167,7 @@ class Run:
         for metric_name, value in episode_vals.items():
             if metric_name not in self._logs:
                 stat = ScenarioStats(name=metric_name,
-                                    distribution_type=value["distribution"],
-                                    metric_dim_type=value["metric_dim_type"],
-                                    graph_type=value["graph_type"])
+                                    distribution_type=value["distribution"])
                 self._logs[metric_name] = stat
             self._logs[metric_name].log(data=value["value"],
                                         x=episode.episode_id)
@@ -279,7 +277,6 @@ class Run:
                     run_id=self._id,
                     pickled_bytes=pickled,
                     graph_type=value.graph_type.value,
-                    metric_dim_type=value.metric_dim_type.value
                 )
             elif isinstance(value, Summary):
                 metric_val = value.finalize()
@@ -297,7 +294,6 @@ class Run:
                     run_id=self._id,
                     pickled_bytes=pickled,
                     graph_type=value.graph_type.value,
-                    metric_dim_type=value.metric_dim_type.value
                 )
             elif isinstance(value, Code):
                 self._api_client.upload_code(
