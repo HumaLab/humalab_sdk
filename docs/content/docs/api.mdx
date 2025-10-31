@@ -18,7 +18,7 @@ humalab.init(
     description: str | None = None,
     id: str | None = None,
     tags: list[str] | None = None,
-    scenario: str | list | dict | None = None,
+    scenario: str | list | dict | Scenario | None = None,
     scenario_id: str | None = None,
     seed: int | None = None,
     auto_create_scenario: bool = False,
@@ -34,7 +34,7 @@ humalab.init(
 - `description`: A description of the run
 - `id`: The unique identifier for the run (auto-generated if None)
 - `tags`: A list of tags to associate with the run
-- `scenario`: The scenario configuration as a string, list, or dict
+- `scenario`: The scenario configuration as a string, list, dict, or Scenario instance
 - `scenario_id`: The unique identifier of a pre-defined scenario to use
 - `seed`: An optional seed for scenario randomization
 - `auto_create_scenario`: Whether to automatically create the scenario if it does not exist
@@ -46,17 +46,33 @@ humalab.init(
 ```python
 import humalab as hl
 
+# Using a dict
 with hl.init(
     project="my_project",
     name="experiment_1",
     scenario={"param": "${uniform(0, 10)}"},
     api_key="your_api_key"
 ) as run:
-    # Your code here
     episode = run.create_episode()
     with episode:
         # Run validation
         pass
+
+# Or using a Scenario instance
+from humalab.scenarios import Scenario
+
+scenario = Scenario()
+scenario.init(scenario={"param": "${uniform(0, 10)}"}, seed=42)
+
+with hl.init(
+    project="my_project",
+    name="experiment_2",
+    scenario=scenario,
+    api_key="your_api_key"
+) as run:
+    episode = run.create_episode()
+    # The scenario is already initialized with seed=42
+    pass
 ```
 
 ### login()
