@@ -50,7 +50,7 @@ import humalab as hl
 with hl.init(
     project="my_project",
     name="experiment_1",
-    scenario={"param": "&#36;&#123;uniform(0, 10)}"},
+    scenario={"param": "${uniform(0, 10)}"},
     api_key="your_api_key"
 ) as run:
     episode = run.create_episode()
@@ -62,7 +62,7 @@ with hl.init(
 from humalab.scenarios import Scenario
 
 scenario = Scenario()
-scenario.init(scenario={"param": "&#36;&#123;uniform(0, 10)}"}, seed=42)
+scenario.init(scenario={"param": "${uniform(0, 10)}"}, seed=42)
 
 with hl.init(
     project="my_project",
@@ -171,7 +171,7 @@ scenario.init(
 **Example:**
 ```python
 scenario.init(
-    scenario={"param": "&#36;&#123;uniform(0, 10)}"},
+    scenario={"param": "${uniform(0, 10)}"},
     seed=42,
     scenario_id="my_scenario:1"
 )
@@ -208,7 +208,7 @@ from humalab.scenarios import Scenario
 
 scenario = Scenario()
 scenario.init(
-    scenario={"param": "&#36;&#123;uniform(0, 10)}"},
+    scenario={"param": "${uniform(0, 10)}"},
     scenario_id="my_scenario:1",
     seed=42
 )
@@ -572,8 +572,8 @@ robot_speed = episode.robot.speed
 ```python
 scenario.init(scenario={
     "robot": {
-        "speed": "&#36;&#123;uniform(1, 10)}",
-        "precision": "&#36;&#123;gaussian(0.5, 0.1)}"
+        "speed": "${uniform(1, 10)}",
+        "precision": "${gaussian(0.5, 0.1)}"
     }
 })
 
@@ -692,8 +692,8 @@ ScenarioStats metrics are created automatically when you use distributions in sc
 ```python
 # Scenario stats are created automatically
 scenario.init(scenario={
-    "learning_rate": "&#36;&#123;log_uniform(0.001, 0.1)}",
-    "batch_size": "&#36;&#123;discrete(3, [32, 64, 128], [0.3, 0.5, 0.2])}"
+    "learning_rate": "${log_uniform(0.001, 0.1)}",
+    "batch_size": "${discrete(3, [32, 64, 128], [0.3, 0.5, 0.2])}"
 })
 
 # ScenarioStats for both parameters are automatically tracked
@@ -787,13 +787,13 @@ Available in scenario configurations:
 ### Scalar (0D) Distributions
 
 ```python
-"&#36;&#123;uniform(min, max)}"
-"&#36;&#123;gaussian(mean, std)}"
-"&#36;&#123;truncated_gaussian(mean, std, min, max)}"
-"&#36;&#123;log_uniform(min, max)}"
-"&#36;&#123;bernoulli(p)}"
-"&#36;&#123;categorical(n, probs)}"
-"&#36;&#123;discrete(n, values, probs)}"
+"${uniform(min, max)}"
+"${gaussian(mean, std)}"
+"${truncated_gaussian(mean, std, min, max)}"
+"${log_uniform(min, max)}"
+"${bernoulli(p)}"
+"${categorical(n, probs)}"
+"${discrete(n, values, probs)}"
 ```
 
 ### Multi-Dimensional Distributions
@@ -802,21 +802,21 @@ Available in scenario configurations:
 
 ```python
 # 1D (same parameters as 0D, returns 1-element array)
-"&#36;&#123;uniform_1d(min, max)}"
-"&#36;&#123;gaussian_1d(mean, std)}"
-"&#36;&#123;truncated_gaussian_1d(mean, std, min, max)}"
-"&#36;&#123;bernoulli_1d(p)}"
-"&#36;&#123;log_uniform_1d(min, max)}"
+"${uniform_1d(min, max)}"
+"${gaussian_1d(mean, std)}"
+"${truncated_gaussian_1d(mean, std, min, max)}"
+"${bernoulli_1d(p)}"
+"${log_uniform_1d(min, max)}"
 
 # 2D (array parameters)
-"&#36;&#123;uniform_2d([min, min], [max, max])}"
-"&#36;&#123;gaussian_2d([mean, mean], [std, std])}"
-"&#36;&#123;truncated_gaussian_2d([mean, mean], [std, std], [min, min], [max, max])}"
+"${uniform_2d([min, min], [max, max])}"
+"${gaussian_2d([mean, mean], [std, std])}"
+"${truncated_gaussian_2d([mean, mean], [std, std], [min, min], [max, max])}"
 
 # 3D (array parameters)
-"&#36;&#123;uniform_3d([min, min, min], [max, max, max])}"
-"&#36;&#123;gaussian_3d([mean, mean, mean], [std, std, std])}"
-"&#36;&#123;truncated_gaussian_3d([mean, mean, mean], [std, std, std], [min, min, min], [max, max, max])}"
+"${uniform_3d([min, min, min], [max, max, max])}"
+"${gaussian_3d([mean, mean, mean], [std, std, std])}"
+"${truncated_gaussian_3d([mean, mean, mean], [std, std, std], [min, min, min], [max, max, max])}"
 ```
 
 ## Error Handling
