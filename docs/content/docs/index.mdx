@@ -38,7 +38,7 @@ with hl.init(api_key="your_api_key",
              scenario={
                  "param1": "${uniform(0, 10)}",
                  "param2": "${gaussian(5, 1)}"
-             }) run:
+             }) as run:
 
     # Create an episode
     with run.create_episode() as episode:
