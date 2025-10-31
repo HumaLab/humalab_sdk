@@ -2,6 +2,8 @@
   base = "docs"
   command = "npm run build"
   publish = "out"
+  # Don't use any build plugins - pure static hosting
+  functions = "netlify/functions"
 
 # Headers for static assets
 [[headers]]
