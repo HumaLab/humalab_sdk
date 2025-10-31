@@ -1,18 +1,20 @@
-import Link from 'next/link';
+import { source } from '@/lib/source';
+import { DocsPage, DocsBody } from 'fumadocs-ui/page';
+import { notFound } from 'next/navigation';
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Get the first page (root of docs)
+  const page = source.getPage([]);
+  if (!page) notFound();
+
+  const MDX = page.data.body;
+
   return (
-    <main className="flex h-screen flex-col items-center justify-center text-center">
-      <h1 className="mb-4 text-4xl font-bold">HumaLab SDK</h1>
-      <p className="mb-8 text-lg text-muted-foreground">
-        Python SDK for HumaLab - A platform for adaptive AI validation
-      </p>
-      <Link
-        href="/docs"
-        className="rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-      >
-        View Documentation
-      </Link>
-    </main>
+    <DocsPage toc={page.data.toc} full={page.data.full}>
+      <DocsBody>
+        <h1>{page.data.title}</h1>
+        <MDX />
+      </DocsBody>
+    </DocsPage>
   );
 }
