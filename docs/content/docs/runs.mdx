@@ -199,9 +199,31 @@ run.finish(status=RunStatus.CANCELED)
 - `ERRORED`: Run encountered an error
 - `CANCELED`: Run was canceled
 
-## Code Artifacts
+## Artifacts
 
-Log code artifacts to track versions:
+### Automatic Artifacts
+
+HumaLab automatically uploads certain artifacts when a run finishes:
+
+- **scenario**: The scenario YAML configuration is automatically saved
+- **seed**: The random seed (if provided) is automatically saved for reproducibility
+
+These are uploaded when you call `run.finish()` or when exiting a context manager.
+
+```python
+with hl.init(
+    project="my_project",
+    scenario={"param": "${uniform(0, 10)}"},
+    seed=42  # This seed is automatically uploaded
+) as run:
+    # Your code here
+    pass
+# When the run finishes, both scenario YAML and seed are uploaded
+```
+
+### Code Artifacts
+
+You can also manually log code artifacts to track versions:
 
 ```python
 # Log code content
@@ -210,6 +232,8 @@ with open("agent.py", "r") as f:
 
 run.log_code(key="agent_code", code_content=code)
 ```
+
+**Note**: The names `scenario` and `seed` are reserved and cannot be used for custom artifacts or metrics.
 
 ## Best Practices
 
