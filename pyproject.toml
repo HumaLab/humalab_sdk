@@ -59,6 +59,7 @@ exclude = '''
   | \.tox
   | \.venv
   | _build
+  | docs
   | buck-out
   | build
   | dist
