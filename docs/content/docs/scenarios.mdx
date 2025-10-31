@@ -1,0 +1,215 @@
+---
+title: Scenarios
+description: Learn how to create and manage scenarios in HumaLab
+---
+
+# Scenarios
+
+Scenarios are the foundation of HumaLab's adaptive validation system. They define parameterized configurations using probability distributions, enabling systematic exploration of your AI system's behavior.
+
+## Creating a Scenario
+
+```python
+import humalab as hl
+
+scenario = hl.scenarios.Scenario()
+scenario.init(scenario={
+    "gravity": "${uniform(-9.8, -8.8)}",
+    "friction": "${gaussian(0.5, 0.1)}",
+    "wind_speed": "${truncated_gaussian(0, 2, 0, 10)}"
+})
+```
+
+## Supported Distributions
+
+HumaLab supports a variety of probability distributions for scenario parameters:
+
+### Scalar Distributions (0D)
+
+#### Uniform Distribution
+Samples uniformly between min and max values.
+
+```python
+"${uniform(min, max)}"
+# Example: "${uniform(0, 10)}"
+```
+
+#### Gaussian (Normal) Distribution
+Samples from a normal distribution with specified mean and standard deviation.
+
+```python
+"${gaussian(mean, std)}"
+# Example: "${gaussian(5.0, 1.0)}"
+```
+
+#### Truncated Gaussian
+Samples from a normal distribution bounded by min and max values.
+
+```python
+"${truncated_gaussian(mean, std, min, max)}"
+# Example: "${truncated_gaussian(5.0, 1.0, 0, 10)}"
+```
+
+#### Log-Uniform Distribution
+Samples uniformly in log space, useful for parameters that span multiple orders of magnitude.
+
+```python
+"${log_uniform(min, max)}"
+# Example: "${log_uniform(0.001, 1.0)}"
+```
+
+#### Bernoulli Distribution
+Binary distribution returning 0 or 1.
+
+```python
+"${bernoulli(p)}"
+# Example: "${bernoulli(0.5)}"
+```
+
+#### Categorical Distribution
+Samples from discrete categories with specified probabilities.
+
+```python
+"${categorical(num_categories, probabilities)}"
+# Example: "${categorical(3, [0.5, 0.3, 0.2])}"
+```
+
+#### Discrete Distribution
+Samples from a discrete set of values with probabilities.
+
+```python
+"${discrete(num_values, values, probabilities)}"
+# Example: "${discrete(3, [1, 5, 10], [0.5, 0.3, 0.2])}"
+```
+
+### Multi-Dimensional Distributions
+
+HumaLab supports 1D, 2D, and 3D versions of several distributions. **Important**: 1D distributions use the same scalar parameters as 0D but return a 1-element array. 2D and 3D use array parameters.
+
+```python
+# 1D Uniform (same parameters as 0D, returns array of size 1)
+"position_x": "${uniform_1d(-10, 10)}"
+
+# 1D Gaussian (same parameters as 0D, returns array of size 1)
+"velocity": "${gaussian_1d(5.0, 1.0)}"
+
+# 2D Gaussian (array parameters for 2D output)
+"coordinates": "${gaussian_2d([0, 0], [1, 1])}"
+
+# 3D Uniform (array parameters for 3D output)
+"position_3d": "${uniform_3d([-5, -5, 0], [5, 5, 10])}"
+```
+
+**Parameter Rules:**
+- **0D (scalar)**: `uniform(min, max)` → returns single value
+- **1D**: `uniform_1d(min, max)` → returns `[value]` (1-element array, same scalar params)
+- **2D**: `uniform_2d([min, min], [max, max])` → returns `[value1, value2]` (array params)
+- **3D**: `uniform_3d([min, min, min], [max, max, max])` → returns `[value1, value2, value3]` (array params)
+```
+
+## Scenario Configuration
+
+### YAML String Format
+
+You can define scenarios using YAML strings:
+
+```python
+scenario_yaml = """
+environment:
+  gravity: ${uniform(-9.8, -8.8)}
+  temperature: ${gaussian(20, 5)}
+
+robot:
+  initial_position: ${uniform_2d([-1, -1], [1, 1])}
+  mass: ${log_uniform(0.5, 2.0)}
+
+task:
+  difficulty: ${categorical(3, [0.5, 0.3, 0.2])}
+"""
+
+scenario.init(scenario=scenario_yaml)
+```
+
+### Dictionary Format
+
+Alternatively, use Python dictionaries:
+
+```python
+scenario_dict = {
+    "environment": {
+        "gravity": "${uniform(-9.8, -8.8)}",
+        "temperature": "${gaussian(20, 5)}"
+    },
+    "robot": {
+        "initial_position": "${uniform_2d([-1, -1], [1, 1])}",
+        "mass": "${log_uniform(0.5, 2.0)}"
+    }
+}
+
+scenario.init(scenario=scenario_dict)
+```
+
+## Resolving Scenarios
+
+When you create an episode, the scenario is resolved by sampling from all distributions:
+
+```python
+# The scenario template
+print(scenario.yaml)
+
+# Create a run and episode
+run = hl.Run(scenario=scenario, project="test")
+episode = run.create_episode()
+
+# Get the resolved values
+resolved_scenario, episode_vals = scenario.resolve()
+print(resolved_scenario)  # Concrete values sampled from distributions
+```
+
+## Scenario IDs and Versions
+
+You can specify scenario IDs and versions for tracking:
+
+```python
+scenario.init(
+    scenario=scenario_dict,
+    scenario_id="my_scenario:1",  # Format: "name:version"
+    seed=42  # Optional seed for reproducibility
+)
+```
+
+## Accessing Scenario Data
+
+### Template Access
+```python
+# Get the scenario template (with distribution placeholders)
+template = scenario.template
+yaml_str = scenario.yaml
+```
+
+### Episode-Specific Values
+```python
+# Each episode has its own sampled values
+episode = run.create_episode()
+# Episode values are automatically tracked and uploaded
+```
+
+## Best Practices
+
+1. **Use Appropriate Distributions**: Choose distributions that match your parameter's characteristics
+   - Use `uniform` for bounded parameters without a preferred value
+   - Use `gaussian` for parameters with a natural center value
+   - Use `log_uniform` for parameters spanning multiple orders of magnitude
+
+2. **Set Reasonable Bounds**: Ensure distribution parameters create valid values for your use case
+
+3. **Version Your Scenarios**: Use scenario IDs and versions to track changes over time
+
+4. **Test Resolution**: Verify that scenario resolution produces valid configurations:
+   ```python
+   for i in range(10):
+       resolved, vals = scenario.resolve()
+       print(f"Sample {i}: {resolved}")
+   ```
+
+5. **Document Your Distributions**: Include comments explaining why specific distributions and parameters were chosen
