@@ -129,8 +129,8 @@ Scenario statistics are automatically tracked when you use distributions in your
 ```python
 # Define scenario with distributions
 scenario.init(scenario={
-    "gravity": "&#36;&#123;uniform(-9.8, -8.8)}",
-    "friction": "&#36;&#123;gaussian(0.5, 0.1)}"
+    "gravity": "${uniform(-9.8, -8.8)}",
+    "friction": "${gaussian(0.5, 0.1)}"
 })
 
 # Statistics are automatically collected
@@ -219,7 +219,7 @@ hl.init(api_key="your_api_key")
 # Create scenario
 scenario = hl.scenarios.Scenario()
 scenario.init(scenario={
-    "difficulty": "&#36;&#123;uniform(0, 1)}"
+    "difficulty": "${uniform(0, 1)}"
 })
 
 # Create run
