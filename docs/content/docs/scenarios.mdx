@@ -234,6 +234,24 @@ scenario.init(
 # Get the scenario template (with distribution placeholders)
 template = scenario.template
 yaml_str = scenario.yaml
+
+# Get scenario metadata
+scenario_id = scenario.scenario_id  # The scenario ID
+seed = scenario.seed                # The random seed (if set)
+```
+
+**Example:**
+```python
+scenario = Scenario()
+scenario.init(
+    scenario={"param": "${uniform(0, 10)}"},
+    scenario_id="my_scenario:1",
+    seed=42
+)
+
+print(f"ID: {scenario.scenario_id}")    # Output: my_scenario
+print(f"Seed: {scenario.seed}")          # Output: 42
+print(f"YAML:\n{scenario.yaml}")
 ```
 
 ### Episode-Specific Values

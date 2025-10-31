@@ -196,8 +196,27 @@ config, vals = scenario.resolve()
 ### Scenario Properties
 
 ```python
-scenario.template  # Get scenario template (OmegaConf)
-scenario.yaml      # Get scenario as YAML string
+scenario.template     # Get scenario template (OmegaConf)
+scenario.yaml         # Get scenario as YAML string
+scenario.scenario_id  # Get scenario ID (str | None)
+scenario.seed         # Get random seed (int | None)
+```
+
+**Example:**
+```python
+from humalab.scenarios import Scenario
+
+scenario = Scenario()
+scenario.init(
+    scenario={"param": "${uniform(0, 10)}"},
+    scenario_id="my_scenario:1",
+    seed=42
+)
+
+print(f"Scenario ID: {scenario.scenario_id}")  # Output: my_scenario
+print(f"Seed: {scenario.seed}")                 # Output: 42
+print(f"Template: {scenario.template}")
+print(f"YAML: {scenario.yaml}")
 ```
 
 ## Scenario Operations
@@ -811,6 +830,11 @@ try:
 except ValueError as e:
     print(f"Error: {e}")
 
+try:
+    run.log({"seed": value})  # "seed" is reserved
+except ValueError as e:
+    print(f"Error: {e}")
+
 # ValueError: Metric already exists
 try:
     run.log({"metric": value})
@@ -818,6 +842,12 @@ try:
 except ValueError as e:
     print(f"Error: {e}")
 ```
+
+### Reserved Names
+
+The following names are reserved and cannot be used for metrics or artifacts:
+- `scenario` - Reserved for the scenario YAML configuration
+- `seed` - Reserved for the scenario random seed
 
 ## Context Manager Support
 

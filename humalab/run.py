@@ -261,6 +261,12 @@ class Run:
             run_id=self._id,
             code_content=self.scenario.yaml
         )
+
+        self._api_client.upload_python(
+            artifact_key="seed",
+            run_id=self._id,
+            pickled_bytes=pickle.dumps(self.scenario.seed)
+        )
         # TODO: submit final metrics
         for key, value in self._logs.items():
             if isinstance(value, ScenarioStats):

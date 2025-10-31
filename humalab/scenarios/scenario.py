@@ -184,6 +184,7 @@ class Scenario:
         self._scenario_template = OmegaConf.create()
         self._cur_scenario = OmegaConf.create()
         self._scenario_id = None
+        self._seed = None
 
         self._episode_vals = {}
         self._lock = RLock()
@@ -206,6 +207,7 @@ class Scenario:
                 If None, a new UUID is generated.
         """
         self._num_env = None # num_env
+        self._seed = seed
 
         # Parse scenario id
         scenario_version = 1
@@ -335,6 +337,24 @@ class Scenario:
             OmegaConf.resolve(cur_scenario)
             episode_vals = copy.deepcopy(self._episode_vals)
             return cur_scenario, episode_vals
+
+    @property
+    def scenario_id(self) -> str | None:
+        """The scenario ID.
+
+        Returns:
+            str | None: The scenario ID, or None if not set.
+        """
+        return self._scenario_id
+
+    @property
+    def seed(self) -> int | None:
+        """The random seed for the scenario.
+
+        Returns:
+            int | None: The random seed, or None if not set.
+        """
+        return self._seed
 
     @property
     def template(self) -> Any:

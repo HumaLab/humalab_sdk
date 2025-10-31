@@ -4,7 +4,8 @@ from enum import Enum
 
 
 RESERVED_NAMES = {
-    "sceanario"
+    "sceanario",
+    "seed",
 }
 """Set of reserved names that cannot be used for metric or artifact keys."""
 
