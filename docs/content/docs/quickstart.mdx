@@ -17,21 +17,7 @@ pip install humalab
 
 Before using HumaLab, configure your authentication:
 
-### Option 1: Direct in init()
-
-```python
-import humalab as hl
-
-with hl.init(
-    api_key="your_api_key",
-    project="my_project",
-    scenario={...}
-) as run:
-    # Your code here
-    pass
-```
-
-### Option 2: Configure with login()
+### Configure with login()
 
 ```python
 import humalab as hl
@@ -65,7 +51,6 @@ with hl.init(
         "friction": "${gaussian(0.5, 0.1)}",
         "wind_speed": "${uniform(0, 5)}"
     },
-    api_key="your_api_key"
 ) as run:
     # Execute episodes
     for i in range(10):
@@ -257,18 +242,6 @@ Make sure HumaLab is installed:
 
 ```bash
 pip install --upgrade humalab
-```
-
-### Connection Issues
-
-If you're behind a proxy or firewall:
-
-```python
-# Use custom base URL if needed
-hl.init(
-    api_key="your_api_key",
-    base_url="https://custom-endpoint.humalab.ai"
-)
 ```
 
 ## Getting Help

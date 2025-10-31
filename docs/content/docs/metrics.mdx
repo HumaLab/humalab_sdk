@@ -163,19 +163,26 @@ Scenario statistics are automatically uploaded when you finish the run.
 
 ## Summary Metrics
 
-Summary metrics aggregate data into a single value:
+Summary metrics aggregate data into a single value using various aggregation methods:
 
 ```python
 from humalab.metrics.summary import Summary
 
-# Create a summary metric
-summary = Summary()
+# Create a summary metric with aggregation type
+# Supported types: "min", "max", "mean", "last", "first", "none"
+summary_max = Summary(summary="max")
+summary_mean = Summary(summary="mean")
+summary_last = Summary(summary="last")
 
 # Add to run
-run.add_metric("total_episodes", summary)
+run.add_metric("max_reward", summary_max)
+run.add_metric("avg_success_rate", summary_mean)
+run.add_metric("final_score", summary_last)
 
-# Log a single summary value
-run.log({"total_episodes": 100})
+# Log values - summary will aggregate them
+run.log({"max_reward": 95.5})
+run.log({"max_reward": 98.2})  # Will keep the max
+run.log({"avg_success_rate": 0.85})  # Will compute mean of all logged values
 ```
 
 ## Code Artifacts
@@ -201,30 +208,6 @@ Scenarios are automatically logged as code artifacts:
 # Access it via run.scenario.yaml
 ```
 
-## Custom Metrics
-
-Create custom metrics by subclassing the `Metrics` base class:
-
-```python
-from humalab.metrics.metric import Metrics
-from humalab.constants import MetricDimType, GraphType
-
-class CustomMetric(Metrics):
-    def __init__(self):
-        super().__init__(
-            metric_dim_type=MetricDimType.ONE_D,
-            graph_type=GraphType.LINE
-        )
-
-    def _finalize(self) -> dict:
-        # Custom processing before upload
-        processed_values = [v * 2 for v in self._values]
-
-        return {
-            "values": processed_values,
-            "x_values": self._x_values
-        }
-```
 
 ## Metric Finalization
 
