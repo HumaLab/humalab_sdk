@@ -47,9 +47,9 @@ with hl.init(
     description="Testing different physics parameters",
     tags=["physics", "simulation"],
     scenario={
-        "gravity": "${uniform(-10, -9)}",
-        "friction": "${gaussian(0.5, 0.1)}",
-        "wind_speed": "${uniform(0, 5)}"
+        "gravity": "&#36;&#123;uniform(-10, -9)}",
+        "friction": "&#36;&#123;gaussian(0.5, 0.1)}",
+        "wind_speed": "&#36;&#123;uniform(0, 5)}"
     },
 ) as run:
     # Execute episodes
@@ -86,9 +86,9 @@ Scenarios define the parameter space using probability distributions:
 
 ```python
 scenario = {
-    "parameter1": "${uniform(0, 10)}",      # Uniform from 0 to 10
-    "parameter2": "${gaussian(5, 1)}",      # Gaussian with mean=5, std=1
-    "parameter3": "${bernoulli(0.7)}"       # 70% chance of 1, 30% of 0
+    "parameter1": "&#36;&#123;uniform(0, 10)}",      # Uniform from 0 to 10
+    "parameter2": "&#36;&#123;gaussian(5, 1)}",      # Gaussian with mean=5, std=1
+    "parameter3": "&#36;&#123;bernoulli(0.7)}"       # 70% chance of 1, 30% of 0
 }
 ```
 
@@ -180,8 +180,8 @@ with hl.init(
     name="speed_precision_test",
     tags=["robot", "test"],
     scenario={
-        "robot_speed": "${uniform(1, 10)}",
-        "precision": "${gaussian(5, 2)}"
+        "robot_speed": "&#36;&#123;uniform(1, 10)}",
+        "precision": "&#36;&#123;gaussian(5, 2)}"
     },
     api_key="your_api_key"
 ) as run:
