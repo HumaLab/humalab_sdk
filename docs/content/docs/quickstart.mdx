@@ -127,10 +127,9 @@ Track metrics across episodes:
 
 ```python
 # Create a metric
-from humalab.constants import MetricDimType, GraphType
+from humalab.constants import GraphType
 
 metric = hl.metrics.Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 

@@ -12,11 +12,10 @@ HumaLab provides a comprehensive metrics system for tracking and analyzing your 
 Standard metrics track time-series data across episodes or steps.
 
 ```python
-from humalab.constants import MetricDimType, GraphType
+from humalab.constants import GraphType
 
 # Create a metric
 metric = hl.metrics.Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 
@@ -26,23 +25,6 @@ run.add_metric("score", metric)
 # Log data points
 run.log({"score": 0.95}, x={"score": 0})  # x is optional
 run.log({"score": 0.97}, x={"score": 1})
-```
-
-### Metric Dimension Types
-
-Control how metrics are visualized:
-
-```python
-from humalab.constants import MetricDimType
-
-# One-dimensional metrics (single value)
-MetricDimType.ONE_D
-
-# Two-dimensional metrics (x, y pairs)
-MetricDimType.TWO_D
-
-# Three-dimensional metrics (x, y, z tuples)
-MetricDimType.THREE_D
 ```
 
 ### Graph Types
@@ -97,7 +79,6 @@ Log metrics across all episodes:
 ```python
 # Create metric
 metric = hl.metrics.Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 
@@ -230,7 +211,7 @@ print(metric_data)  # {"values": [...], "x_values": [...]}
 
 ```python
 import humalab as hl
-from humalab.constants import MetricDimType, GraphType
+from humalab.constants import GraphType
 
 # Initialize
 hl.init(api_key="your_api_key")
@@ -246,13 +227,11 @@ run = hl.Run(scenario=scenario, project="test")
 
 # Add run-level metrics
 success_rate = hl.metrics.Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 run.add_metric("success_rate", success_rate)
 
 avg_reward = hl.metrics.Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 run.add_metric("avg_reward", avg_reward)

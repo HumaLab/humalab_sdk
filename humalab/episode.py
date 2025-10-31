@@ -279,7 +279,6 @@ class Episode:
                     episode_id=self._episode_id,
                     pickled_bytes=pickled,
                     graph_type=value.graph_type.value,
-                    metric_dim_type=value.metric_dim_type.value
                 )
             elif isinstance(value, Code):
                 self._api_client.upload_code(

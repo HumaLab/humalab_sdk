@@ -558,22 +558,19 @@ Create a metrics instance.
 
 ```python
 from humalab.metrics import Metrics
-from humalab.constants import MetricDimType, GraphType
+from humalab.constants import GraphType
 
 metric = Metrics(
-    metric_dim_type: MetricDimType = MetricDimType.ONE_D,
     graph_type: GraphType = GraphType.LINE
 )
 ```
 
 **Parameters:**
-- `metric_dim_type`: Metric dimension type
-- `graph_type`: Graph visualization type
+- `graph_type`: Graph visualization type (defaults to LINE). The metric dimensionality is automatically determined from the graph type.
 
 **Example:**
 ```python
 metric = Metrics(
-    metric_dim_type=MetricDimType.ONE_D,
     graph_type=GraphType.LINE
 )
 ```

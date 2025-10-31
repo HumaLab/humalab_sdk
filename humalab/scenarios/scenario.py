@@ -163,36 +163,6 @@ SCENARIO_STATS_DIM_TYPE_MAP = {
     "truncated_gaussian_3d": MetricDimType.THREE_D,
 }
 
-DISTRIBUTION_GRAPH_TYPE = {
-    # 0D distributions
-    "uniform": GraphType.HISTOGRAM,
-    "bernoulli": GraphType.BAR,
-    "categorical": GraphType.BAR,
-    "discrete": GraphType.BAR,
-    "log_uniform": GraphType.HISTOGRAM,
-    "gaussian": GraphType.GAUSSIAN,
-    "truncated_gaussian": GraphType.GAUSSIAN,
-
-    # 1D distributions
-    "uniform_1d": GraphType.HISTOGRAM,
-    "bernoulli_1d": GraphType.BAR,
-    "categorical_1d": GraphType.BAR,
-    "discrete_1d": GraphType.BAR,
-    "log_uniform_1d": GraphType.HISTOGRAM,
-    "gaussian_1d": GraphType.GAUSSIAN,
-    "truncated_gaussian_1d": GraphType.GAUSSIAN,
-
-    # 2D distributions
-    "uniform_2d": GraphType.SCATTER,
-    "gaussian_2d": GraphType.HEATMAP,
-    "truncated_gaussian_2d": GraphType.HEATMAP,
-
-    # 3D distributions
-    "uniform_3d": GraphType.THREE_D_MAP,
-    "gaussian_3d": GraphType.THREE_D_MAP,
-    "truncated_gaussian_3d": GraphType.THREE_D_MAP,
-}
-
 class Scenario:
     """Manages scenario configurations with probabilistic distributions.
 
@@ -343,8 +313,6 @@ class Scenario:
             self._episode_vals[key_path] = {
                     "value": ret_val,
                     "distribution": dist_name,
-                    "graph_type": DISTRIBUTION_GRAPH_TYPE[dist_name],
-                    "metric_dim_type": SCENARIO_STATS_DIM_TYPE_MAP[dist_name],
                 }
             return ret_val
 
