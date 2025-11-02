@@ -43,7 +43,8 @@ def _pull_scenario(client: HumaLabApiClient,
 
         scenario_response = client.get_scenario(
             project_name=project,
-            uuid=scenario_real_id, version=scenario_version)
+            uuid=scenario_real_id, 
+            version=scenario_version)
         final_scenario = scenario_response["yaml_content"]
     else:
         final_scenario = scenario
