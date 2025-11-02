@@ -38,13 +38,13 @@ class HumaLabApiClient:
         Initialize the HumaLab API client.
         
         Args:
-            base_url: Base URL for the HumaLab service (defaults to localhost:8000)
+            base_url: Base URL for the HumaLab service (defaults to https://api.humalab.ai)
             api_key: API key for authentication (defaults to HUMALAB_API_KEY env var)
             timeout: Request timeout in seconds
         """
         humalab_config = HumalabConfig()
-        self.base_url = base_url or os.getenv("HUMALAB_SERVICE_URL", "http://localhost:8000") or humalab_config.base_url
-        self.api_key = api_key or os.getenv("HUMALAB_API_KEY") or humalab_config.api_key
+        self.base_url = base_url or humalab_config.base_url or os.getenv("HUMALAB_SERVICE_URL", "https://api.humalab.ai")
+        self.api_key = api_key or humalab_config.api_key or os.getenv("HUMALAB_API_KEY")
         self.timeout = timeout or humalab_config.timeout or 30.0  # Default timeout of 30 seconds
         
         # Ensure base_url ends without trailing slash
