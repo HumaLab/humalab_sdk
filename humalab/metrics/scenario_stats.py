@@ -18,7 +18,7 @@ SCENARIO_STATS_NEED_FLATTEN = {
 DISTRIBUTION_GRAPH_TYPE = {
     # 0D distributions
     "uniform": GraphType.HISTOGRAM,
-    "bernoulli": GraphType.BAR,
+    "bernoulli": GraphType.HISTOGRAM,
     "categorical": GraphType.BAR,
     "discrete": GraphType.BAR,
     "log_uniform": GraphType.HISTOGRAM,
@@ -27,7 +27,7 @@ DISTRIBUTION_GRAPH_TYPE = {
 
     # 1D distributions
     "uniform_1d": GraphType.HISTOGRAM,
-    "bernoulli_1d": GraphType.BAR,
+    "bernoulli_1d": GraphType.HISTOGRAM,
     "categorical_1d": GraphType.BAR,
     "discrete_1d": GraphType.BAR,
     "log_uniform_1d": GraphType.HISTOGRAM,
