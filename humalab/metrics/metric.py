@@ -80,7 +80,7 @@ class Metrics:
             if x is not None:
                 self._x_values.append(x)
             else:
-                self._x_values.append(self._step)
+                self._x_values.append(self._step + 1)
                 self._step += 1
         
     def finalize(self) -> dict:
