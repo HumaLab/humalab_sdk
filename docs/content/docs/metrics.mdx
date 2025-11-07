@@ -43,11 +43,8 @@ GraphType.HISTOGRAM
 # Bar chart
 GraphType.BAR
 
-# Scatter plot
+# Scatter plot (for 2D data)
 GraphType.SCATTER
-
-# Heatmap (for 2D data)
-GraphType.HEATMAP
 
 # Gaussian distribution plot
 GraphType.GAUSSIAN
@@ -56,7 +53,97 @@ GraphType.GAUSSIAN
 GraphType.THREE_D_MAP
 ```
 
+#### When to Use Each Graph Type
+
+**LINE** - Best for continuous time-series data:
+```python
+# Tracking metrics over episodes or training steps
+metric = hl.metrics.Metrics(graph_type=GraphType.LINE)
+run.add_metric("loss", metric)
+
+for step in range(1000):
+    run.log({"loss": compute_loss()})
+```
+
+**BAR** - Best for categorical or discrete comparisons:
+```python
+# Comparing performance across different categories
+metric = hl.metrics.Metrics(graph_type=GraphType.BAR)
+run.add_metric("category_scores", metric)
+
+# Log scores for different categories
+categories = ["easy", "medium", "hard"]
+for i, category in enumerate(categories):
+    score = evaluate_category(category)
+    run.log({"category_scores": score}, x={"category_scores": i})
+```
+
+**HISTOGRAM** - Best for visualizing distributions:
+```python
+# Distribution of episode rewards
+metric = hl.metrics.Metrics(graph_type=GraphType.HISTOGRAM)
+run.add_metric("reward_distribution", metric)
+
+for episode in episodes:
+    run.log({"reward_distribution": episode.reward})
+```
+
+**SCATTER** - Best for 2D relationships (requires 2-element data):
+```python
+# Plotting accuracy vs learning rate
+metric = hl.metrics.Metrics(graph_type=GraphType.SCATTER)
+run.add_metric("accuracy_vs_lr", metric)
+
+run.log({"accuracy_vs_lr": [learning_rate, accuracy]})
+```
+
+**GAUSSIAN** - Best for Gaussian distribution plots:
+```python
+# Gaussian-distributed parameter tracking
+metric = hl.metrics.Metrics(graph_type=GraphType.GAUSSIAN)
+run.add_metric("noise_samples", metric)
+```
+
+**THREE_D_MAP** - Best for 3D visualizations (requires 3-element data):
+```python
+# 3D position tracking
+metric = hl.metrics.Metrics(graph_type=GraphType.THREE_D_MAP)
+run.add_metric("robot_position", metric)
+
+run.log({"robot_position": [x, y, z]})
+```
+
 ## Logging Metrics
+
+### BAR vs HISTOGRAM: When to Use Which?
+
+**Use BAR for:**
+- Comparing values across named categories
+- Discrete data points with labels
+- Fixed, known set of options
+
+**Use HISTOGRAM for:**
+- Distribution of continuous values
+- Many data points without specific labels
+- Understanding value frequency
+
+```python
+# BAR: Comparing performance across difficulty levels
+bar_metric = hl.metrics.Metrics(graph_type=GraphType.BAR)
+run.add_metric("difficulty_performance", bar_metric)
+
+difficulties = ["easy", "medium", "hard"]
+for i, level in enumerate(difficulties):
+    avg_score = evaluate_difficulty(level)
+    run.log({"difficulty_performance": avg_score}, x={"difficulty_performance": i})
+
+# HISTOGRAM: Distribution of all episode scores
+hist_metric = hl.metrics.Metrics(graph_type=GraphType.HISTOGRAM)
+run.add_metric("score_distribution", hist_metric)
+
+for episode in episodes:
+    run.log({"score_distribution": episode.score})
+```
 
 ### Episode-Level Logging
 
@@ -108,6 +195,11 @@ for step in range(1000):
         {"training_loss": loss},
         x={"training_loss": step}
     )
+
+# Or let the SDK auto-increment steps (starts from 1)
+for _ in range(1000):
+    loss = train_step()
+    run.log({"training_loss": loss})  # x-axis will be 1, 2, 3, ...
 ```
 
 ### Replace vs Append
@@ -271,10 +363,12 @@ hl.finish()
 ## Best Practices
 
 1. **Choose Appropriate Graph Types**: Match the visualization to your data
-   - Use `LINE` for time-series
-   - Use `HISTOGRAM` for distributions
-   - Use `SCATTER` for 2D relationships
-   - Use `HEATMAP` for 2D density
+   - Use `LINE` for time-series and continuous data
+   - Use `BAR` for categorical comparisons and discrete data
+   - Use `HISTOGRAM` for value distributions
+   - Use `SCATTER` for 2D relationships (requires 2-element data)
+   - Use `GAUSSIAN` for Gaussian distribution plots
+   - Use `THREE_D_MAP` for 3D visualizations (requires 3-element data)
 
 2. **Use Meaningful Metric Names**: Make it clear what you're tracking
    ```python
@@ -311,4 +405,10 @@ hl.finish()
    ```python
    run.add_metric("training_time_seconds", metric)
    run.add_metric("memory_usage_mb", metric)
+   ```
+
+8. **Understand Auto-Incrementing Steps**: When you don't provide explicit x-values, the SDK automatically increments the step counter starting from 1:
+   ```python
+   # First call: x=1, second call: x=2, etc.
+   run.log({"metric": value})
    ```
