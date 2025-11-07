@@ -36,7 +36,7 @@ class HumalabConfig:
             config_path.parent.mkdir(parents=True, exist_ok=True)
             config_path.touch()
         with open(config_path, "r") as f:
-            self._config = yaml.safe_load(f)
+            self._config = yaml.safe_load(f) or {}
         self._workspace_path = os.path.expanduser(self._config["workspace_path"]) if self._config and "workspace_path" in self._config else home_path
         self._base_url = self._config["base_url"] if self._config and "base_url" in self._config else ""
         self._api_key = self._config["api_key"] if self._config and "api_key" in self._config else ""
