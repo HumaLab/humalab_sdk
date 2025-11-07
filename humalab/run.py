@@ -235,7 +235,7 @@ class Run:
         for episode in self._episodes.values():
             if not episode.is_finished:
                 if status == RunStatus.FINISHED:
-                    episode.finish(status=EpisodeStatus.CANCELED, err_msg=err_msg)
+                    episode.finish(status=EpisodeStatus.SUCCESS, err_msg=err_msg)
                 elif status == RunStatus.ERRORED:
                     episode.finish(status=EpisodeStatus.ERRORED, err_msg=err_msg)
                 elif status == RunStatus.CANCELED:
