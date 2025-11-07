@@ -36,8 +36,8 @@ DISTRIBUTION_GRAPH_TYPE = {
 
     # 2D distributions
     "uniform_2d": GraphType.SCATTER,
-    "gaussian_2d": GraphType.HEATMAP,
-    "truncated_gaussian_2d": GraphType.HEATMAP,
+    "gaussian_2d": GraphType.SCATTER,
+    "truncated_gaussian_2d": GraphType.SCATTER,
 
     # 3D distributions
     "uniform_3d": GraphType.THREE_D_MAP,
