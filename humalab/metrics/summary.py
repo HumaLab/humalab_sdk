@@ -26,7 +26,7 @@ class Summary(Metrics):
         """
         if summary not in {"min", "max", "mean", "last", "first", "none"}:
             raise ValueError(f"Unsupported summary type: {summary}. Supported types are 'min', 'max', 'mean', 'last', 'first', and 'none'.")
-        super().__init__(graph_type=GraphType.NUMERIC)
+        super().__init__(graph_type=GraphType.LINE)
         self._summary = summary
     
     @property

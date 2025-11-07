@@ -32,13 +32,11 @@ class MetricType(Enum):
 
 class GraphType(Enum):
     """Types of graphs supported by Humalab."""
-    NUMERIC = "numeric"
     LINE = "line"
     BAR = "bar"
     SCATTER = "scatter"
     HISTOGRAM = "histogram"
     GAUSSIAN = "gaussian"
-    HEATMAP = "heatmap"
     THREE_D_MAP = "3d_map"
 
 

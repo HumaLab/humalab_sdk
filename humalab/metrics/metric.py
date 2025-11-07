@@ -2,13 +2,11 @@ from typing import Any
 from humalab.constants import MetricDimType, GraphType
 
 GRAPH_TO_DIM_TYPE = {
-    GraphType.NUMERIC: MetricDimType.ZERO_D,
     GraphType.LINE: MetricDimType.ONE_D,
     GraphType.HISTOGRAM: MetricDimType.ONE_D,
     GraphType.BAR: MetricDimType.ONE_D,
     GraphType.GAUSSIAN: MetricDimType.ONE_D,
     GraphType.SCATTER: MetricDimType.TWO_D,
-    GraphType.HEATMAP: MetricDimType.TWO_D,
     GraphType.THREE_D_MAP: MetricDimType.THREE_D,
 }
 
@@ -66,6 +64,13 @@ class Metrics:
                 If None, uses an auto-incrementing step counter.
             replace (bool): Whether to replace the last logged value. Defaults to False.
         """
+        if self._graph_type == GraphType.THREE_D_MAP:
+            if len(data) != 3:
+                raise ValueError("Data for 3D map metrics must be a list or tuple of three values.")
+        elif self._graph_type == GraphType.SCATTER:
+            if len(data) != 2:
+                raise ValueError("Data for scatter metrics must be a list or tuple of two values.")    
+        
         if replace:
             self._values[-1] = data
             if x is not None:
