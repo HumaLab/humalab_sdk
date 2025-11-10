@@ -208,10 +208,10 @@ with hl.init(
     for i in range(50):
         with run.create_episode() as episode:
             # Run simulation with sampled parameters
-            result = simulate_robot_task(
-                speed=episode.robot_speed,
-                precision=episode.precision
-            )
+            # result = simulate_robot_task(
+            #     speed=episode.robot_speed,
+            #     precision=episode.precision
+            # )
 
             # Log episode results
             episode.log(result)
