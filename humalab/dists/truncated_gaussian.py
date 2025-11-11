@@ -90,6 +90,14 @@ class TruncatedGaussian(Distribution):
         Returns:
             int | float | np.ndarray: Sampled value(s) within [low, high].
         """
+        # Handle scalar case (when size is None)
+        if self._size is None:
+            sample = self._generator.normal(loc=self._loc, scale=self._scale)
+            while sample < self._low or sample > self._high:
+                sample = self._generator.normal(loc=self._loc, scale=self._scale)
+            return sample
+
+        # Handle array case
         samples = self._generator.normal(loc=self._loc, scale=self._scale, size=self._size)
         mask = (samples < self._low) | (samples > self._high)
         while np.any(mask):
