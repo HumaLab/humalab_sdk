@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.3-orange.svg)](https://pypi.org/project/humalab/)
 
-[Homepage](https://humalab.ai) • [Application](https://app.humalab.ai) • [Documentation](https://docs.humalab.ai) • [Tutorial Video](https://youtu.be/uaxiDEXRH1w)
+[Homepage](https://humalab.ai) • [Application](https://app.humalab.ai) • [Documentation](https://docs.humalab.ai) • [Tutorial Video](https://youtu.be/F-7j2eWypEQ)
 
 </div>
 
@@ -47,7 +47,7 @@ pip install humalab
 
 Get started quickly with our comprehensive tutorial:
 
-[![HumaLab Tutorial](https://img.youtube.com/vi/uaxiDEXRH1w/0.jpg)](https://youtu.be/uaxiDEXRH1w)
+[![HumaLab Tutorial](https://img.youtube.com/vi/uaxiDEXRH1w/0.jpg)](https://youtu.be/F-7j2eWypEQ)
 
 ### Basic Example
 
@@ -280,7 +280,7 @@ Comprehensive documentation is available at the following resources:
 
 - **Homepage**: [humalab.ai](https://humalab.ai)
 - **Full Documentation**: [docs.humalab.ai](https://docs.humalab.ai)
-- **Tutorial Video**: [YouTube Tutorial](https://youtu.be/uaxiDEXRH1w)
+- **Tutorial Video**: [YouTube Tutorial](https://youtu.be/F-7j2eWypEQ)
 - **Application**: [app.humalab.ai](https://app.humalab.ai)
 
 ### Documentation Topics
@@ -441,6 +441,6 @@ If you use HumaLab SDK in your research, please cite:
 
 <div align="center">
 
-**[Get Started Now](https://app.humalab.ai)** | **[View Documentation](https://docs.humalab.ai)** | **[Watch Tutorial](https://youtu.be/uaxiDEXRH1w)**
+**[Get Started Now](https://app.humalab.ai)** | **[View Documentation](https://docs.humalab.ai)** | **[Watch Tutorial](https://youtu.be/F-7j2eWypEQ)**
 
 </div>
